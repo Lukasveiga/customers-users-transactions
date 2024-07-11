@@ -1,7 +1,7 @@
 package mocks
 
 import (
-	"github.com/Lukasveiga/customers-users-Transaction/internal/domain"
+	"github.com/Lukasveiga/customers-users-transaction/internal/domain"
 	"github.com/stretchr/testify/mock"
 )
 

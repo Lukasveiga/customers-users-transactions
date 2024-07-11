@@ -1,10 +1,7 @@
 .PHONY: test
 
 test:
-	go test ./... -v
+	go test -cover -race ./... -v
 
-test-cover:
-	go test -cover ./... -v
-
-test-race:
-	go test -race ./... -v
+lint:
+	golangci-lint run

@@ -1,4 +1,4 @@
-module github.com/Lukasveiga/customers-users-Transaction
+module github.com/Lukasveiga/customers-users-transaction
 
 go 1.22.4
 
