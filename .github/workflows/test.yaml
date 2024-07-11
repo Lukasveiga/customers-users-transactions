@@ -14,14 +14,16 @@ jobs:
         working-directory: ./users-transactions-api
 
     steps:
-      - name: Set up Go
-        uses: actions/setup-go@v5
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v4
         with:
-          go-version: 1.22.4
-      - name: Check out code
-        uses: actions/checkout@v4
+          go-version: "1.22.4"
+          cache: false
       - name: Lint Go Code
         uses: golangci/golangci-lint-action@v3
+        with:
+          version: v1.56.0
+          args: --timeout 3m --config .golangci.yaml
 
   test:
     name: Test
@@ -31,11 +33,9 @@ jobs:
         working-directory: ./users-transactions-api
 
     steps:
-      - name: Set up Go
-        uses: actions/setup-go@v5
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v4
         with:
-          go-version: 1.22.4
-      - name: Check out code
-        uses: actions/checkout@v4
+          go-version: "1.22.4"
       - name: Run Tests
         run: go test -cover -race ./... -v
