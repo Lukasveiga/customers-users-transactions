@@ -4,9 +4,9 @@ import "fmt"
 
 type AlreadyExistsError struct {
 	Object string
-	Id int32
+	Id interface{}
 }
 
 func (e AlreadyExistsError) Error() string {
-	return fmt.Sprintf("%s already exists with id %d", e.Object, e.Id)
+	return fmt.Sprintf("%s already exists with id %v", e.Object, e.Id)
 }

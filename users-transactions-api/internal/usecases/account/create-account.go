@@ -20,12 +20,17 @@ func NewCreateAccountUsecase(repo port.AccountRepository, logger config.Logger) 
 }
 
 func (uc CreateAccountUsecase) Exec(account *domain.Account) (*domain.Account, error) {
-	existAccount, _ := uc.repo.FindById(account.TenantId, account.Id);
+	existAccount, err := uc.repo.FindByNumber(account.TenantId, account.Number);
+
+	if err != nil {
+		uc.logger.Errorf("error to find account by id: %v", err)
+		return nil, err
+	}
 
 	if existAccount != nil {
 		return nil, &shared.AlreadyExistsError{
 			Object: "account",
-			Id: account.Id,
+			Id: account.Number,
 		}
 	}
 
