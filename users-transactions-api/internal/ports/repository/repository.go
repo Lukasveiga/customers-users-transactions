@@ -1,6 +1,6 @@
 package port
 
-import "github.com/Lukasveiga/customers-users-Transaction/internal/domain"
+import "github.com/Lukasveiga/customers-users-transaction/internal/domain"
 
 type AccountRepository interface {
 	Create(account *domain.Account) (*domain.Account, error)

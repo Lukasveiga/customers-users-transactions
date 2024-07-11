@@ -4,10 +4,10 @@ import (
 	"errors"
 	"testing"
 
-	"github.com/Lukasveiga/customers-users-Transaction/config"
-	"github.com/Lukasveiga/customers-users-Transaction/internal/domain"
-	"github.com/Lukasveiga/customers-users-Transaction/internal/mocks"
-	"github.com/Lukasveiga/customers-users-Transaction/internal/shared"
+	"github.com/Lukasveiga/customers-users-transaction/config"
+	"github.com/Lukasveiga/customers-users-transaction/internal/domain"
+	"github.com/Lukasveiga/customers-users-transaction/internal/mocks"
+	"github.com/Lukasveiga/customers-users-transaction/internal/shared"
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
 )

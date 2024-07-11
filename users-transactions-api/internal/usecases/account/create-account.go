@@ -1,10 +1,10 @@
 package usecases
 
 import (
-	"github.com/Lukasveiga/customers-users-Transaction/config"
-	"github.com/Lukasveiga/customers-users-Transaction/internal/domain"
-	port "github.com/Lukasveiga/customers-users-Transaction/internal/ports/repository"
-	"github.com/Lukasveiga/customers-users-Transaction/internal/shared"
+	"github.com/Lukasveiga/customers-users-transaction/config"
+	"github.com/Lukasveiga/customers-users-transaction/internal/domain"
+	port "github.com/Lukasveiga/customers-users-transaction/internal/ports/repository"
+	"github.com/Lukasveiga/customers-users-transaction/internal/shared"
 )
 
 type CreateAccountUsecase struct {
