@@ -30,4 +30,3 @@ type TransactionRepository interface {
 type TenantRepository interface {
 	FindById(id int32) (*domain.Tenant, error)
 }
-

@@ -16,7 +16,7 @@ func (mock *MockAccountRepository) Create(account *domain.Account) (*domain.Acco
 	if result != nil {
 		return result.(*domain.Account), args.Error(1)
 	}
-	
+
 	return nil, args.Error(1)
 }
 
@@ -27,7 +27,7 @@ func (mock *MockAccountRepository) FindAll(tenantId int32) ([]domain.Account, er
 	if result != nil {
 		return result.([]domain.Account), args.Error(1)
 	}
-	
+
 	return nil, args.Error(1)
 }
 
@@ -38,7 +38,7 @@ func (mock *MockAccountRepository) FindById(tenantId int32, id int32) (*domain.A
 	if result != nil {
 		return result.(*domain.Account), args.Error(1)
 	}
-	
+
 	return nil, args.Error(1)
 }
 
@@ -49,7 +49,7 @@ func (mock *MockAccountRepository) FindByNumber(tenantId int32, number string) (
 	if result != nil {
 		return result.(*domain.Account), args.Error(1)
 	}
-	
+
 	return nil, args.Error(1)
 }
 
