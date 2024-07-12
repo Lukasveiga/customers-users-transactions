@@ -4,7 +4,6 @@ import (
 	"errors"
 	"testing"
 
-	"github.com/Lukasveiga/customers-users-transaction/config"
 	"github.com/Lukasveiga/customers-users-transaction/internal/domain"
 	"github.com/Lukasveiga/customers-users-transaction/internal/mocks"
 	"github.com/Lukasveiga/customers-users-transaction/internal/shared"
@@ -17,18 +16,19 @@ func TestCreateAccountUsecase(t *testing.T) {
 
 	mockRepo := new(mocks.MockAccountRepository)
 	account := &domain.Account{
-		Id: 1,
+		Id:       1,
 		TenantId: 1,
-		Number: uuid.New().String(),
-		Status: "active",
+		Number:   uuid.New().String(),
+		Status:   "active",
 	}
-	sut := NewCreateAccountUsecase(mockRepo, *config.NewLogger("test"))
+
+	sut := NewCreateAccountUsecase(mockRepo)
 
 	t.Run("Error to find accout", func(t *testing.T) {
 		expectedErr := errors.New("internal repo error")
 
 		mockRepo.On("FindByNumber").Return(nil, expectedErr)
-		defer mockRepo.On("FindByNumber").Unset() 
+		defer mockRepo.On("FindByNumber").Unset()
 
 		result, err := sut.Exec(account)
 
@@ -42,7 +42,7 @@ func TestCreateAccountUsecase(t *testing.T) {
 
 		expectedErr := &shared.AlreadyExistsError{
 			Object: "account",
-			Id: account.Number,
+			Id:     account.Number,
 		}
 
 		result, err := sut.Exec(account)

@@ -2,60 +2,41 @@ package config
 
 import (
 	"io"
-	"log"
+	"log/slog"
 	"os"
 )
 
-type Logger struct {
-	debug *log.Logger
-	info *log.Logger
-	warning *log.Logger
-	err *log.Logger
-	writer io.Writer
+type LoggerConfig struct {
+	Env     string
+	LogPath string
 }
 
-func NewLogger(prefix string) *Logger {
-	writer := io.Writer(os.Stdout)
-	logger := log.New(writer, prefix, log.Ldate|log.Ltime)
+func InitLogger(loggerConfig LoggerConfig) {
+	level := new(slog.LevelVar)
+	var writer io.Writer
 
-	return &Logger{
-		debug: log.New(writer, "DEBUG: ", logger.Flags()),
-		info: log.New(writer, "INFO: ", logger.Flags()),
-		warning: log.New(writer, "WARNING: ", logger.Flags()),
-		err: log.New(writer, "ERROR: ", logger.Flags()),
-		writer: writer,
+	switch loggerConfig.Env {
+	case "prod":
+		file, err := os.OpenFile(loggerConfig.LogPath, os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0666)
+
+		if err != nil {
+			panic(err)
+		}
+
+		defer file.Close()
+
+		level.Set(slog.LevelInfo.Level())
+		writer = io.MultiWriter(os.Stdout, file)
+	default:
+		level.Set(slog.LevelDebug.Level())
+		writer = os.Stdout
 	}
-}
 
-func (l *Logger) Debug(v ...interface{}) {
-	l.debug.Println(v ...)
-}
+	handlerOpts := &slog.HandlerOptions{
+		Level:     level,
+		AddSource: true,
+	}
 
-func (l *Logger) Info(v ...interface{}) {
-	l.info.Println(v ...)
+	l := slog.New(slog.NewJSONHandler(writer, handlerOpts))
+	slog.SetDefault(l)
 }
-
-func (l *Logger) Warn(v ...interface{}) {
-	l.warning.Println(v ...)
-}
-
-func (l *Logger) Error(v ...interface{}) {
-	l.err.Println(v ...)
-}
-
-func (l *Logger) Debugf(format string, v ...interface{}) {
-	l.debug.Printf(format, v ...)
-}
-
-func (l *Logger) Infof(format string, v ...interface{}) {
-	l.info.Printf(format, v ...)
-}
-
-func (l *Logger) Warnf(format string, v ...interface{}) {
-	l.warning.Printf(format, v ...)
-}
-
-func (l *Logger) Errorf(format string, v ...interface{}) {
-	l.err.Printf(format, v ...)
-}
-

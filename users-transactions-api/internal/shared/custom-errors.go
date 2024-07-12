@@ -4,7 +4,7 @@ import "fmt"
 
 type AlreadyExistsError struct {
 	Object string
-	Id interface{}
+	Id     interface{}
 }
 
 func (e AlreadyExistsError) Error() string {

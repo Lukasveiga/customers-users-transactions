@@ -1,20 +1,19 @@
 package usecases
 
 import (
-	"github.com/Lukasveiga/customers-users-transaction/config"
+	"log/slog"
+
 	"github.com/Lukasveiga/customers-users-transaction/internal/domain"
 	port "github.com/Lukasveiga/customers-users-transaction/internal/ports/repository"
 )
 
 type FindAllUsecase struct {
 	repo port.AccountRepository
-	logger config.Logger
 }
 
-func NewFindAllAccountsUsecase(repo port.AccountRepository, logger config.Logger) *FindAllUsecase {
+func NewFindAllAccountsUsecase(repo port.AccountRepository) *FindAllUsecase {
 	return &FindAllUsecase{
 		repo: repo,
-		logger: logger,
 	}
 }
 
@@ -22,9 +21,12 @@ func (uc FindAllUsecase) Exec(tenantId int32) ([]domain.Account, error) {
 	accounts, err := uc.repo.FindAll(tenantId)
 
 	if err != nil {
-		uc.logger.Errorf("error to find all accounts: %v", err)
+		slog.Error(
+			"error to find all accounts",
+			slog.String("err", err.Error()),
+		)
 		return nil, err
 	}
 
-	return accounts, nil;
+	return accounts, nil
 }
