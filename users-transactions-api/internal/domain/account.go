@@ -1,6 +1,8 @@
 package domain
 
-import "time"
+import (
+	"time"
+)
 
 type Account struct {
 	Id        int32     `json:"id"`
