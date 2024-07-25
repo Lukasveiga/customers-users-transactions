@@ -2,6 +2,7 @@ package usecases
 
 import (
 	"log/slog"
+	"time"
 
 	"github.com/Lukasveiga/customers-users-transaction/internal/domain"
 	port "github.com/Lukasveiga/customers-users-transaction/internal/ports/repository"
@@ -37,6 +38,12 @@ func (uc CreateAccountUsecase) Exec(account *domain.Account) (*domain.Account, e
 		}
 	}
 
+	err = account.Validate()
+	if err != nil {
+		return nil, err
+	}
+
+	account.CreatedAt = time.Now().UTC()
 	savedAccount, err := uc.repo.Create(account)
 
 	if err != nil {
