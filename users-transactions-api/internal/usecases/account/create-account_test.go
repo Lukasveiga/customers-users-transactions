@@ -66,6 +66,30 @@ func TestCreateAccountUsecase(t *testing.T) {
 		assert.Equal(t, expectedErr.Error(), err.Error())
 	})
 
+	t.Run("Error invalid input to create account", func(t *testing.T) {
+		invalidAccount := &domain.Account{
+			Id:       1,
+			TenantId: 1,
+			Number:   "invalid",
+			Status:   "invalid",
+		}
+
+		expectedError := &shared.ValidationError{
+			Errors: map[string]string{
+				"number": "must be a valid uuid",
+				"status": "must be active or inactive",
+			},
+		}
+
+		mockRepo.On("FindByNumber").Return(nil, nil)
+		defer mockRepo.On("FindByNumber").Unset()
+
+		result, err := sut.Exec(invalidAccount)
+
+		assert.Nil(t, result)
+		assert.Equal(t, expectedError.Error(), err.Error())
+	})
+
 	t.Run("Success create new account", func(t *testing.T) {
 		mockRepo.On("FindByNumber").Return(nil, nil)
 		defer mockRepo.On("FindByNumber").Unset()
