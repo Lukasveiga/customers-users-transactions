@@ -22,7 +22,7 @@ func NewAccountHandler(createAccountUsecase *usecases.CreateAccountUsecase) *Acc
 }
 
 func (ah AccountHandler) Create(res http.ResponseWriter, req *http.Request) {
-	tenantId, _ := strconv.ParseInt(req.Header.Get("tenand-id"), 0, 32)
+	tenantId, _ := strconv.ParseInt(req.Header.Get("tenant-id"), 0, 32)
 	var accountDto *dtos.AccountDto
 
 	err := json.NewDecoder(req.Body).Decode(&accountDto)
@@ -40,7 +40,7 @@ func (ah AccountHandler) Create(res http.ResponseWriter, req *http.Request) {
 		if ae, ok := err.(*shared.AlreadyExistsError); ok {
 			jsonData, err := json.Marshal(ae.Error())
 			if err != nil {
-				logInternalServerError(res, err)
+				logInternalServerError(res, "create", err)
 				return
 			}
 
@@ -51,7 +51,7 @@ func (ah AccountHandler) Create(res http.ResponseWriter, req *http.Request) {
 		if ve, ok := err.(*shared.ValidationError); ok {
 			jsonData, err := json.Marshal(ve.Errors)
 			if err != nil {
-				logInternalServerError(res, err)
+				logInternalServerError(res, "create", err)
 				return
 			}
 
@@ -59,7 +59,7 @@ func (ah AccountHandler) Create(res http.ResponseWriter, req *http.Request) {
 			return
 		}
 
-		logInternalServerError(res, err)
+		logInternalServerError(res, "create", err)
 		return
 	}
 
@@ -68,15 +68,15 @@ func (ah AccountHandler) Create(res http.ResponseWriter, req *http.Request) {
 	err = json.NewEncoder(res).Encode(savedAccount)
 
 	if err != nil {
-		logInternalServerError(res, err)
+		logInternalServerError(res, "create", err)
 		return
 	}
 }
 
-func logInternalServerError(res http.ResponseWriter, err error) {
+func logInternalServerError(res http.ResponseWriter, method string, err error) {
 	slog.Error(
-		"create product handler",
-		slog.String("method", "create"),
+		"account handler",
+		slog.String("method", method),
 		slog.String("error", err.Error()),
 	)
 
