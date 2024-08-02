@@ -31,7 +31,7 @@ func TestFindOneAccountUsecase(t *testing.T) {
 		mockRepo.On("FindById").Return(nil, expectedErr)
 		defer mockRepo.On("FindById").Unset()
 
-		result, err := sut.Exec(tenantId, account.Id)
+		result, err := sut.FindOne(tenantId, account.Id)
 
 		assert.Nil(t, result)
 		assert.Equal(t, expectedErr.Error(), err.Error())
@@ -41,7 +41,7 @@ func TestFindOneAccountUsecase(t *testing.T) {
 		mockRepo.On("FindById").Return(nil, nil)
 		defer mockRepo.On("FindById").Unset()
 
-		result, err := sut.Exec(tenantId, account.Id)
+		result, err := sut.FindOne(tenantId, account.Id)
 
 		expectedErr := &shared.EntityNotFoundError{
 			Object: "account",
@@ -56,7 +56,7 @@ func TestFindOneAccountUsecase(t *testing.T) {
 		mockRepo.On("FindById").Return(account, nil)
 		defer mockRepo.On("FindById").Unset()
 
-		result, err := sut.Exec(tenantId, account.Id)
+		result, err := sut.FindOne(tenantId, account.Id)
 
 		assert.Nil(t, err)
 		assert.Equal(t, result, account)

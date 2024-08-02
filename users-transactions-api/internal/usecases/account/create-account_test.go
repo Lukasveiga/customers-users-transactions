@@ -30,7 +30,7 @@ func TestCreateAccountUsecase(t *testing.T) {
 		mockRepo.On("FindByNumber").Return(nil, expectedErr)
 		defer mockRepo.On("FindByNumber").Unset()
 
-		result, err := sut.Exec(account)
+		result, err := sut.Create(account)
 
 		assert.Nil(t, result)
 		assert.Equal(t, expectedErr.Error(), err.Error())
@@ -45,7 +45,7 @@ func TestCreateAccountUsecase(t *testing.T) {
 			Id:     account.Number,
 		}
 
-		result, err := sut.Exec(account)
+		result, err := sut.Create(account)
 
 		assert.Nil(t, result)
 		assert.Equal(t, expectedErr.Error(), err.Error())
@@ -60,7 +60,7 @@ func TestCreateAccountUsecase(t *testing.T) {
 		mockRepo.On("Create").Return(nil, expectedErr)
 		defer mockRepo.On("Create").Unset()
 
-		result, err := sut.Exec(account)
+		result, err := sut.Create(account)
 
 		assert.Nil(t, result)
 		assert.Equal(t, expectedErr.Error(), err.Error())
@@ -84,7 +84,7 @@ func TestCreateAccountUsecase(t *testing.T) {
 		mockRepo.On("FindByNumber").Return(nil, nil)
 		defer mockRepo.On("FindByNumber").Unset()
 
-		result, err := sut.Exec(invalidAccount)
+		result, err := sut.Create(invalidAccount)
 
 		assert.Nil(t, result)
 		assert.Equal(t, expectedError.Error(), err.Error())
@@ -97,7 +97,7 @@ func TestCreateAccountUsecase(t *testing.T) {
 		mockRepo.On("Create").Return(account, nil)
 		defer mockRepo.On("Create").Unset()
 
-		result, err := sut.Exec(account)
+		result, err := sut.Create(account)
 
 		assert.Nil(t, err)
 		assert.Equal(t, account, result)

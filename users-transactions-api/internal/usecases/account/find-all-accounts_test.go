@@ -32,7 +32,7 @@ func TestFindAllAccountsUsecase(t *testing.T) {
 		mockRepo.On("FindAll").Return(nil, expectedErr)
 		defer mockRepo.On("FindAll").Unset()
 
-		result, err := sut.Exec(tenantId)
+		result, err := sut.FindAll(tenantId)
 
 		assert.Nil(t, result)
 		assert.Equal(t, expectedErr.Error(), err.Error())
@@ -42,7 +42,7 @@ func TestFindAllAccountsUsecase(t *testing.T) {
 		mockRepo.On("FindAll").Return(accounts, nil)
 		defer mockRepo.On("FindAll").Unset()
 
-		result, err := sut.Exec(tenantId)
+		result, err := sut.FindAll(tenantId)
 
 		assert.Nil(t, err)
 		assert.Len(t, result, 1)
