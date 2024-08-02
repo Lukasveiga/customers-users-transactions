@@ -18,7 +18,7 @@ func NewFindOneAccountUsecase(repo port.AccountRepository) *FindOneAccountUsecas
 	}
 }
 
-func (uc *FindOneAccountUsecase) Exec(tenantId int32, accountId int32) (*domain.Account, error) {
+func (uc *FindOneAccountUsecase) FindOne(tenantId int32, accountId int32) (*domain.Account, error) {
 	account, err := uc.repo.FindById(tenantId, accountId)
 
 	if err != nil {

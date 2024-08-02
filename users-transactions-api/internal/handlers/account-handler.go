@@ -29,12 +29,13 @@ func (ah AccountHandler) Create(res http.ResponseWriter, req *http.Request) {
 
 	if err != nil {
 		http.Error(res, "Decoding Error", http.StatusBadRequest)
+		return
 	}
 
 	account := accountDto.ToDomain()
 	account.TenantId = int32(tenantId)
 
-	savedAccount, err := ah.createAccountUsecase.Exec(account)
+	savedAccount, err := ah.createAccountUsecase.Create(account)
 
 	if err != nil {
 		if ae, ok := err.(*shared.AlreadyExistsError); ok {
