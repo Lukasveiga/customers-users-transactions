@@ -15,7 +15,7 @@ func TestFindAllAccountsUsecase(t *testing.T) {
 
 	mockRepo := new(mocks.MockAccountRepository)
 	tenantId := int32(1)
-	accounts := []domain.Account{
+	accounts := []*domain.Account{
 		{
 			Id:       1,
 			TenantId: 1,
