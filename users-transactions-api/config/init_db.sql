@@ -5,6 +5,9 @@ CREATE TABLE tenants (
 
 INSERT INTO tenants (name) VALUES ('Tenant A');
 INSERT INTO tenants (name) VALUES ('Tenant B');
+INSERT INTO tenants (name) VALUES ('Tenant C');
+INSERT INTO tenants (name) VALUES ('Tenant D');
+INSERT INTO tenants (name) VALUES ('Tenant E');
 
 CREATE TABLE accounts (
     id SERIAL PRIMARY KEY,

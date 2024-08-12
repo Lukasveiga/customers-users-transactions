@@ -26,8 +26,8 @@ func (ar *PgAccountRepository) Create(account *domain.Account) (*domain.Account,
 	row := ar.db.QueryRow(query, account.TenantId, account.Number, account.Status, account.CreatedAt,
 		account.UpdatedAt, account.DeletedAt)
 
-	err := row.Scan(&savedAccount.Id, &savedAccount.TenantId, &savedAccount.Status, &savedAccount.CreatedAt,
-		&savedAccount.UpdatedAt, &savedAccount.DeletedAt)
+	err := row.Scan(&savedAccount.Id, &savedAccount.TenantId, &savedAccount.Number, &savedAccount.Status,
+		&savedAccount.CreatedAt, &savedAccount.UpdatedAt, &savedAccount.DeletedAt)
 
 	if err != nil {
 		slog.Error(
@@ -47,8 +47,8 @@ func (ar *PgAccountRepository) FindById(tenantId int32, id int32) (*domain.Accou
 	query := "SELECT * FROM accounts WHERE tenant_id = $1 AND id = $2"
 
 	row := ar.db.QueryRow(query, tenantId, id)
-	err := row.Scan(&account.Id, &account.TenantId, &account.Status, &account.CreatedAt,
-		&account.UpdatedAt, &account.DeletedAt)
+	err := row.Scan(&account.Id, &account.TenantId, &account.Number, &account.Status,
+		&account.CreatedAt, &account.UpdatedAt, &account.DeletedAt)
 
 	switch {
 	case err == sql.ErrNoRows:
@@ -72,8 +72,8 @@ func (ar *PgAccountRepository) FindByNumber(tenantId int32, number string) (*dom
 	query := "SELECT * FROM accounts WHERE tenant_id = $1 AND number = $2"
 
 	row := ar.db.QueryRow(query, tenantId, number)
-	err := row.Scan(&account.Id, &account.TenantId, &account.Status, &account.CreatedAt,
-		&account.UpdatedAt, &account.DeletedAt)
+	err := row.Scan(&account.Id, &account.TenantId, &account.Number, &account.Status,
+		&account.CreatedAt, &account.UpdatedAt, &account.DeletedAt)
 
 	switch {
 	case err == sql.ErrNoRows:
@@ -112,8 +112,8 @@ func (ar *PgAccountRepository) FindAll(tenantId int32) ([]*domain.Account, error
 	for rows.Next() {
 		var account domain.Account
 
-		if err := rows.Scan(&account.Id, &account.TenantId, &account.Status, &account.CreatedAt,
-			&account.UpdatedAt, &account.DeletedAt); err != nil {
+		if err := rows.Scan(&account.Id, &account.TenantId, &account.Number, &account.Status,
+			&account.CreatedAt, &account.UpdatedAt, &account.DeletedAt); err != nil {
 			slog.Error(
 				"postgre account repository",
 				slog.String("method", "FindAll"),

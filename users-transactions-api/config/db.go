@@ -3,6 +3,8 @@ package config
 import (
 	"database/sql"
 	"log/slog"
+
+	_ "github.com/lib/pq"
 )
 
 func InitConfig(connString string) *sql.DB {

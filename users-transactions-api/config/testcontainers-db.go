@@ -25,7 +25,7 @@ func setupContainer() {
 	ctx = context.Background()
 	c, err := postgres.Run(
 		ctx,
-		"postgres:14-alpine",
+		"docker.io/postgres:16-alpine",
 		postgres.WithDatabase("test"),
 		postgres.WithUsername("postgre"),
 		postgres.WithPassword("postgre"),
@@ -42,9 +42,7 @@ func setupContainer() {
 		panic(err)
 	}
 
-	connString, err = c.ConnectionString(ctx)
-
-	connString = connString + "sslmode=disable"
+	connString, err = c.ConnectionString(ctx, "sslmode=disable", "application_name=test")
 
 	slog.Debug("testcontainers url connection", "url", connString)
 
