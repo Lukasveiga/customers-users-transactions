@@ -4,7 +4,7 @@ import "github.com/Lukasveiga/customers-users-transaction/internal/domain"
 
 type AccountRepository interface {
 	Create(account *domain.Account) (*domain.Account, error)
-	FindAll(tenantId int32) ([]domain.Account, error)
+	FindAll(tenantId int32) ([]*domain.Account, error)
 	FindById(tenantId int32, id int32) (*domain.Account, error)
 	FindByNumber(tenantId int32, number string) (*domain.Account, error)
 	Update(id int32, account *domain.Account) (*domain.Account, error)
