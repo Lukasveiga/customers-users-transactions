@@ -13,8 +13,6 @@ import (
 )
 
 func TestPostgreAccountRepository(t *testing.T) {
-	t.Parallel()
-
 	dbClient := config.SetupPgTestcontainers()
 
 	pgAccountRepository := NewPgAccountRepository(dbClient)
