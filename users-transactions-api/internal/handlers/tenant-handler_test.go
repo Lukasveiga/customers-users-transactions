@@ -11,6 +11,7 @@ import (
 	"github.com/Lukasveiga/customers-users-transaction/internal/domain"
 	"github.com/Lukasveiga/customers-users-transaction/internal/mocks"
 	usecases "github.com/Lukasveiga/customers-users-transaction/internal/usecases/tenant"
+	"github.com/gin-gonic/gin"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -27,19 +28,22 @@ func TestTenantHandler(t *testing.T) {
 	}
 
 	t.Run("[FindTenant] Invalid tenant id", func(t *testing.T) {
-		req := httptest.NewRequest("GET", "/", nil)
-		req.Header.Set("tenant-id", "invalid-tenant-id")
-
 		res := httptest.NewRecorder()
+		c, _ := gin.CreateTestContext(res)
 
-		nextHandler := http.HandlerFunc(func(res http.ResponseWriter, req *http.Request) {
-			res.WriteHeader(http.StatusOK)
-		})
+		c.Request = httptest.NewRequest("GET", "/", nil)
+		c.Request.Header.Set("tenant-id", "invalid-tenant-id")
 
-		sut.FindTenant(nextHandler).ServeHTTP(res, req)
+		nextHandler := func(c *gin.Context) {
+			c.JSON(http.StatusOK, "")
+		}
+
+		middleware := sut.FindTenant()
+		middleware(c)
+		nextHandler(c)
 
 		assert.Equal(t, http.StatusBadRequest, res.Result().StatusCode)
-		assert.Equal(t, "invalid tenant id\n", res.Body.String())
+		assert.Equal(t, "{\"error\":\"invalid tenant id\"}\"\"", res.Body.String())
 	})
 
 	t.Run("[FindTenant] Tenant not found", func(t *testing.T) {
@@ -48,19 +52,22 @@ func TestTenantHandler(t *testing.T) {
 
 		tenantId := "1"
 
-		req := httptest.NewRequest("GET", "/", nil)
-		req.Header.Set("tenant-id", tenantId)
-
 		res := httptest.NewRecorder()
+		c, _ := gin.CreateTestContext(res)
 
-		nextHandler := http.HandlerFunc(func(res http.ResponseWriter, req *http.Request) {
-			res.WriteHeader(http.StatusOK)
-		})
+		c.Request = httptest.NewRequest("GET", "/", nil)
+		c.Request.Header.Set("tenant-id", tenantId)
 
-		sut.FindTenant(nextHandler).ServeHTTP(res, req)
+		nextHandler := func(c *gin.Context) {
+			c.JSON(http.StatusOK, "")
+		}
+
+		middleware := sut.FindTenant()
+		middleware(c)
+		nextHandler(c)
 
 		assert.Equal(t, http.StatusBadRequest, res.Result().StatusCode)
-		assert.Equal(t, fmt.Sprintf("\"tenant not found with id %s\"\n", tenantId),
+		assert.Equal(t, fmt.Sprintf("{\"error\":\"\\\"tenant not found with id %s\\\"\"}\"\"", tenantId),
 			res.Body.String())
 	})
 
@@ -72,19 +79,22 @@ func TestTenantHandler(t *testing.T) {
 
 		tenantId := "1"
 
-		req := httptest.NewRequest("GET", "/", nil)
-		req.Header.Set("tenant-id", tenantId)
-
 		res := httptest.NewRecorder()
+		c, _ := gin.CreateTestContext(res)
 
-		nextHandler := http.HandlerFunc(func(res http.ResponseWriter, req *http.Request) {
-			res.WriteHeader(http.StatusOK)
-		})
+		c.Request = httptest.NewRequest("GET", "/", nil)
+		c.Request.Header.Set("tenant-id", tenantId)
 
-		sut.FindTenant(nextHandler).ServeHTTP(res, req)
+		nextHandler := func(c *gin.Context) {
+			c.JSON(http.StatusOK, "")
+		}
+
+		middleware := sut.FindTenant()
+		middleware(c)
+		nextHandler(c)
 
 		assert.Equal(t, http.StatusInternalServerError, res.Result().StatusCode)
-		assert.Equal(t, "Internal Server Error\n", res.Body.String())
+		assert.Equal(t, "{\"error\":\"Internal Server Error\"}\"\"", res.Body.String())
 	})
 
 	t.Run("[FindTenant] Success", func(t *testing.T) {
@@ -93,18 +103,21 @@ func TestTenantHandler(t *testing.T) {
 
 		tenantId := strconv.Itoa(int(tenant.Id))
 
-		req := httptest.NewRequest("GET", "/", nil)
-		req.Header.Set("tenant-id", tenantId)
-
 		res := httptest.NewRecorder()
+		c, _ := gin.CreateTestContext(res)
 
-		nextHandler := http.HandlerFunc(func(res http.ResponseWriter, req *http.Request) {
-			res.WriteHeader(http.StatusOK)
-		})
+		c.Request = httptest.NewRequest("GET", "/", nil)
+		c.Request.Header.Set("tenant-id", tenantId)
 
-		sut.FindTenant(nextHandler).ServeHTTP(res, req)
+		nextHandler := func(c *gin.Context) {
+			c.JSON(http.StatusOK, "")
+		}
+
+		middleware := sut.FindTenant()
+		middleware(c)
+		nextHandler(c)
 
 		assert.Equal(t, http.StatusOK, res.Result().StatusCode)
-		assert.Equal(t, "", res.Body.String())
+		assert.Equal(t, "\"\"", res.Body.String())
 	})
 }

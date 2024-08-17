@@ -7,7 +7,7 @@ type AlreadyExistsError struct {
 	Id     interface{}
 }
 
-func (e AlreadyExistsError) Error() string {
+func (e *AlreadyExistsError) Error() string {
 	return fmt.Sprintf("%s already exists with id %v", e.Object, e.Id)
 }
 
@@ -15,7 +15,7 @@ type ValidationError struct {
 	Errors map[string]string
 }
 
-func (e ValidationError) Error() string {
+func (e *ValidationError) Error() string {
 	return "Validation error"
 }
 
@@ -32,6 +32,6 @@ type EntityNotFoundError struct {
 	Id     interface{}
 }
 
-func (e EntityNotFoundError) Error() string {
+func (e *EntityNotFoundError) Error() string {
 	return fmt.Sprintf("%s not found with id %v", e.Object, e.Id)
 }

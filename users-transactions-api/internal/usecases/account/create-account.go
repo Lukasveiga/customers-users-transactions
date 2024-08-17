@@ -19,7 +19,7 @@ func NewCreateAccountUsecase(repo port.AccountRepository) *CreateAccountUsecase 
 	}
 }
 
-func (uc CreateAccountUsecase) Create(account *domain.Account) (*domain.Account, error) {
+func (uc *CreateAccountUsecase) Create(account *domain.Account) (*domain.Account, error) {
 	existAccount, err := uc.repo.FindByNumber(account.TenantId, account.Number)
 
 	if err != nil {

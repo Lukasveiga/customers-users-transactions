@@ -17,7 +17,7 @@ func NewFindAllAccountsUsecase(repo port.AccountRepository) *FindAllUsecase {
 	}
 }
 
-func (uc FindAllUsecase) FindAll(tenantId int32) ([]*domain.Account, error) {
+func (uc *FindAllUsecase) FindAll(tenantId int32) ([]*domain.Account, error) {
 	accounts, err := uc.repo.FindAll(tenantId)
 
 	if err != nil {
