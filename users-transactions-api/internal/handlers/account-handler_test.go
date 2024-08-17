@@ -13,6 +13,7 @@ import (
 	"github.com/Lukasveiga/customers-users-transaction/internal/handlers/dtos"
 	"github.com/Lukasveiga/customers-users-transaction/internal/mocks"
 	usecases "github.com/Lukasveiga/customers-users-transaction/internal/usecases/account"
+	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
 )
@@ -39,15 +40,17 @@ func TestAccountHandler(t *testing.T) {
 	}
 
 	t.Run("[Create] Decoding error bad request", func(t *testing.T) {
-		req := httptest.NewRequest("POST", "/account", bytes.NewBuffer([]byte("invalid json")))
-		req.Header.Set("Content-Type", "application/json")
-
 		res := httptest.NewRecorder()
+		c, _ := gin.CreateTestContext(res)
 
-		sut.Create(res, req)
+		c.Request = httptest.NewRequest("POST", "/account", bytes.NewBuffer([]byte("invalid json")))
+		c.Request.Header.Set("Content-Type", "application/json")
+		c.Request.Header.Set("tenant-id", "1")
+
+		sut.Create(c)
 
 		assert.Equal(t, http.StatusBadRequest, res.Result().StatusCode)
-		assert.Equal(t, "Decoding Error\n", res.Body.String())
+		assert.Equal(t, "{\"error\":\"Decoding Error\"}", res.Body.String()) // TODO: improve the comparison
 	})
 
 	t.Run("[Create] Account already exists error bad request", func(t *testing.T) {
@@ -58,13 +61,17 @@ func TestAccountHandler(t *testing.T) {
 
 		assert.NoError(t, err)
 
-		req := httptest.NewRequest("POST", "/account", bytes.NewBuffer(body))
 		res := httptest.NewRecorder()
+		c, _ := gin.CreateTestContext(res)
 
-		sut.Create(res, req)
+		c.Request = httptest.NewRequest("POST", "/account", bytes.NewBuffer(body))
+		c.Request.Header.Set("Content-Type", "application/json")
+		c.Request.Header.Set("tenant-id", "1")
+
+		sut.Create(c)
 
 		assert.Equal(t, http.StatusBadRequest, res.Result().StatusCode)
-		assert.Equal(t, fmt.Sprintf("\"account already exists with id %s\"\n", account.Number),
+		assert.Equal(t, fmt.Sprintf("{\"error\":\"account already exists with id %s\"}", account.Number),
 			res.Body.String())
 	})
 
@@ -81,10 +88,14 @@ func TestAccountHandler(t *testing.T) {
 
 		assert.NoError(t, err)
 
-		req := httptest.NewRequest("POST", "/account", bytes.NewBuffer(body))
 		res := httptest.NewRecorder()
+		c, _ := gin.CreateTestContext(res)
 
-		sut.Create(res, req)
+		c.Request = httptest.NewRequest("POST", "/account", bytes.NewBuffer(body))
+		c.Request.Header.Set("Content-Type", "application/json")
+		c.Request.Header.Set("tenant-id", "1")
+
+		sut.Create(c)
 
 		var responseBody map[string]string
 		err = json.NewDecoder(res.Body).Decode(&responseBody)
@@ -104,13 +115,17 @@ func TestAccountHandler(t *testing.T) {
 
 		assert.NoError(t, err)
 
-		req := httptest.NewRequest("POST", "/account", bytes.NewBuffer(body))
 		res := httptest.NewRecorder()
+		c, _ := gin.CreateTestContext(res)
 
-		sut.Create(res, req)
+		c.Request = httptest.NewRequest("POST", "/account", bytes.NewBuffer(body))
+		c.Request.Header.Set("Content-Type", "application/json")
+		c.Request.Header.Set("tenant-id", "1")
+
+		sut.Create(c)
 
 		assert.Equal(t, http.StatusInternalServerError, res.Result().StatusCode)
-		assert.Equal(t, "Internal Server Error\n", res.Body.String())
+		assert.Equal(t, "{\"error\":\"Internal Server Error\"}", res.Body.String())
 	})
 
 	t.Run("[Create] Account created successfully", func(t *testing.T) {
@@ -124,10 +139,14 @@ func TestAccountHandler(t *testing.T) {
 
 		assert.NoError(t, err)
 
-		req := httptest.NewRequest("POST", "/account", bytes.NewBuffer(body))
 		res := httptest.NewRecorder()
+		c, _ := gin.CreateTestContext(res)
 
-		sut.Create(res, req)
+		c.Request = httptest.NewRequest("POST", "/account", bytes.NewBuffer(body))
+		c.Request.Header.Set("Content-Type", "application/json")
+		c.Request.Header.Set("tenant-id", "1")
+
+		sut.Create(c)
 
 		var responseBody domain.Account
 		err = json.NewDecoder(res.Body).Decode(&responseBody)

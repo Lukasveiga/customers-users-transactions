@@ -8,6 +8,7 @@ import (
 
 	"github.com/Lukasveiga/customers-users-transaction/internal/shared"
 	usecases "github.com/Lukasveiga/customers-users-transaction/internal/usecases/tenant"
+	"github.com/gin-gonic/gin"
 )
 
 type TenantHandler struct {
@@ -20,12 +21,13 @@ func NewTenantHandler(findOneTenantUsecase *usecases.FindOneTenantUseCase) *Tena
 	}
 }
 
-func (th *TenantHandler) FindTenant(next http.Handler) http.Handler {
-	return http.HandlerFunc(func(res http.ResponseWriter, req *http.Request) {
-		tenantId, err := strconv.ParseInt(req.Header.Get("tenant-id"), 0, 32)
+func (th *TenantHandler) FindTenant() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		tenantId, err := strconv.ParseInt(c.GetHeader("tenant-id"), 0, 32)
 
 		if err != nil {
-			http.Error(res, "invalid tenant id", http.StatusBadRequest)
+			c.JSON(http.StatusBadRequest, gin.H{"error": "invalid tenant id"})
+			c.Abort()
 			return
 		}
 
@@ -40,12 +42,13 @@ func (th *TenantHandler) FindTenant(next http.Handler) http.Handler {
 						slog.String("method", "FindTenant"),
 						slog.String("error", err.Error()),
 					)
-
-					http.Error(res, "Internal Server Error", http.StatusInternalServerError)
+					c.JSON(http.StatusInternalServerError, gin.H{"error": "Internal Server Error"})
+					c.Abort()
 					return
 				}
 
-				http.Error(res, string(jsonData), http.StatusBadRequest)
+				c.JSON(http.StatusBadRequest, gin.H{"error": string(jsonData)})
+				c.Abort()
 				return
 			}
 
@@ -54,11 +57,11 @@ func (th *TenantHandler) FindTenant(next http.Handler) http.Handler {
 				slog.String("method", "FindTenant"),
 				slog.String("error", err.Error()),
 			)
-
-			http.Error(res, "Internal Server Error", http.StatusInternalServerError)
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "Internal Server Error"})
+			c.Abort()
 			return
 		}
 
-		next.ServeHTTP(res, req)
-	})
+		c.Next()
+	}
 }
