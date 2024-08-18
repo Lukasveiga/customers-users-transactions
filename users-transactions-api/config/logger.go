@@ -11,7 +11,7 @@ type LoggerConfig struct {
 	LogPath string
 }
 
-func InitLogger(loggerConfig LoggerConfig) {
+func InitLogger(loggerConfig *LoggerConfig) {
 	level := new(slog.LevelVar)
 	var writer io.Writer
 
