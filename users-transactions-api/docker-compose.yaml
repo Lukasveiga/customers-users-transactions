@@ -1,0 +1,62 @@
+version: "3.8"
+
+networks:
+  nginx_net:
+    driver: bridge
+
+services:
+  nginx:
+    image: nginx:1.26.0-alpine-slim
+    ports:
+      - 8080:80
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf
+    networks:
+      - nginx_net
+    depends_on:
+      - apione
+      - apitwo
+
+  apione:
+    build:
+      context: .
+      dockerfile: ./Dockerfile
+    environment:
+      PORT: ${PORT}
+      ENV: ${ENV}
+    depends_on:
+      database:
+        condition: service_healthy
+    networks:
+      - nginx_net
+
+  apitwo:
+    build:
+      context: .
+      dockerfile: ./Dockerfile
+    environment:
+      PORT: ${PORT}
+      ENV: ${ENV}
+    depends_on:
+      database:
+        condition: service_healthy
+    networks:
+      - nginx_net
+
+  database:
+    image: postgres:16-alpine
+    container_name: db-postgresql
+    restart: always
+    environment:
+      POSTGRES_DB: ${DB_NAME}
+      POSTGRES_USER: ${DB_USERNAME}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -d ${DB_NAME} -U ${DB_USERNAME}"]
+      interval: 3s
+      timeout: 5s
+      retries: 5
+    networks:
+      - nginx_net
