@@ -18,7 +18,9 @@ func NewFindAllAccountsUsecase(repo port.AccountRepository) *FindAllUsecase {
 }
 
 func (uc *FindAllUsecase) FindAll(tenantId int32) ([]*domain.Account, error) {
-	accounts, err := uc.repo.FindAll(tenantId)
+	accounts := make([]*domain.Account, 0)
+
+	result, err := uc.repo.FindAll(tenantId)
 
 	if err != nil {
 		slog.Error(
@@ -27,6 +29,8 @@ func (uc *FindAllUsecase) FindAll(tenantId int32) ([]*domain.Account, error) {
 		)
 		return nil, err
 	}
+
+	accounts = append(accounts, result...)
 
 	return accounts, nil
 }

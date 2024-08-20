@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"fmt"
 	"log/slog"
 	"net/http"
 	"strconv"
@@ -12,12 +13,14 @@ import (
 )
 
 type AccountHandler struct {
-	createAccountUsecase *usecases.CreateAccountUsecase
+	createAccountUsecase   *usecases.CreateAccountUsecase
+	findAllAccountsUsecase *usecases.FindAllUsecase
 }
 
-func NewAccountHandler(createAccountUsecase *usecases.CreateAccountUsecase) *AccountHandler {
+func NewAccountHandler(createAccountUsecase *usecases.CreateAccountUsecase, findAllAccountsUsecase *usecases.FindAllUsecase) *AccountHandler {
 	return &AccountHandler{
-		createAccountUsecase: createAccountUsecase,
+		createAccountUsecase:   createAccountUsecase,
+		findAllAccountsUsecase: findAllAccountsUsecase,
 	}
 }
 
@@ -57,6 +60,26 @@ func (ah *AccountHandler) Create(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusCreated, savedAccount)
+}
+
+func (ah *AccountHandler) FindAll(c *gin.Context) {
+	tenantId, err := strconv.ParseInt(c.GetHeader("tenant-id"), 0, 32)
+
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid tenant-id"})
+		return
+	}
+
+	accounts, err := ah.findAllAccountsUsecase.FindAll(int32(tenantId))
+
+	if err != nil {
+		logInternalServerError(c, "findAll", err)
+		return
+	}
+
+	fmt.Println(accounts)
+
+	c.JSON(http.StatusOK, accounts)
 }
 
 func logInternalServerError(c *gin.Context, method string, err error) {

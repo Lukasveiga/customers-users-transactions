@@ -22,7 +22,6 @@ func GetEnv(key string) string {
 	if !ok {
 		slog.Error("environment configuration",
 			slog.String("error", "Invalid type assertion"))
-		panic(err)
 	}
 
 	return value
