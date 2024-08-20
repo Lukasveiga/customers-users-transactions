@@ -3,16 +3,11 @@ package router
 import (
 	"net/http"
 
-	"github.com/Lukasveiga/customers-users-transaction/internal/handlers"
+	"github.com/Lukasveiga/customers-users-transaction/cmd/api/factory"
 	"github.com/gin-gonic/gin"
 )
 
-type Handlers struct {
-	AccountHandler *handlers.AccountHandler
-	TenantHandler  *handlers.TenantHandler
-}
-
-func Routes(handlers *Handlers) *gin.Engine {
+func Routes(handlers *factory.Handlers) *gin.Engine {
 	baseUrl := "/api/v1"
 	router := gin.Default()
 
@@ -25,6 +20,7 @@ func Routes(handlers *Handlers) *gin.Engine {
 	account := router.Group(baseUrl)
 	{
 		account.POST("/account", handlers.AccountHandler.Create)
+		account.GET("/account", handlers.AccountHandler.FindAll)
 	}
 
 	return router

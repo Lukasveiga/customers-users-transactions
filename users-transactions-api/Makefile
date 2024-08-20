@@ -3,6 +3,10 @@ ifneq (,$(wildcard ./.env))
     export
 endif
 
+ifeq (${ENV},dev)
+	DB_HOST=localhost
+endif
+
 .PHONY: test, lint, run
 
 GOOSE=goose
