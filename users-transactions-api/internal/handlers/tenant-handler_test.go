@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"encoding/json"
 	"errors"
 	"fmt"
 	"net/http"
@@ -42,8 +43,11 @@ func TestTenantHandler(t *testing.T) {
 		middleware(c)
 		nextHandler(c)
 
+		var responseBody map[string]string
+		json.NewDecoder(res.Body).Decode(&responseBody)
+
 		assert.Equal(t, http.StatusBadRequest, res.Result().StatusCode)
-		assert.Equal(t, "{\"error\":\"invalid tenant id\"}\"\"", res.Body.String())
+		assert.Equal(t, "invalid tenant id", responseBody["error"])
 	})
 
 	t.Run("[FindTenant] Tenant not found", func(t *testing.T) {
@@ -66,9 +70,12 @@ func TestTenantHandler(t *testing.T) {
 		middleware(c)
 		nextHandler(c)
 
+		var responseBody map[string]string
+		json.NewDecoder(res.Body).Decode(&responseBody)
+
 		assert.Equal(t, http.StatusBadRequest, res.Result().StatusCode)
-		assert.Equal(t, fmt.Sprintf("{\"error\":\"\\\"tenant not found with id %s\\\"\"}\"\"", tenantId),
-			res.Body.String())
+		assert.Equal(t, fmt.Sprintf("\"tenant not found with id %s\"", tenantId),
+			responseBody["error"])
 	})
 
 	t.Run("[FindTenant] Internal Server Error", func(t *testing.T) {
@@ -93,8 +100,11 @@ func TestTenantHandler(t *testing.T) {
 		middleware(c)
 		nextHandler(c)
 
+		var responseBody map[string]string
+		json.NewDecoder(res.Body).Decode(&responseBody)
+
 		assert.Equal(t, http.StatusInternalServerError, res.Result().StatusCode)
-		assert.Equal(t, "{\"error\":\"Internal Server Error\"}\"\"", res.Body.String())
+		assert.Equal(t, "Internal Server Error", responseBody["error"])
 	})
 
 	t.Run("[FindTenant] Success", func(t *testing.T) {

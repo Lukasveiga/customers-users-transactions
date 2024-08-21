@@ -20,6 +20,7 @@ func Routes(handlers *factory.Handlers) *gin.Engine {
 	account := router.Group(baseUrl)
 	{
 		account.POST("/account", handlers.AccountHandler.Create)
+		account.GET("/account/:accountId", handlers.AccountHandler.FindOne)
 		account.GET("/account", handlers.AccountHandler.FindAll)
 	}
 

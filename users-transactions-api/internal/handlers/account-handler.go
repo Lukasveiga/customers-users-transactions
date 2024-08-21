@@ -1,7 +1,6 @@
 package handlers
 
 import (
-	"fmt"
 	"log/slog"
 	"net/http"
 	"strconv"
@@ -15,20 +14,21 @@ import (
 type AccountHandler struct {
 	createAccountUsecase   *usecases.CreateAccountUsecase
 	findAllAccountsUsecase *usecases.FindAllUsecase
+	findOneAccountUsecase  *usecases.FindOneAccountUsecase
 }
 
-func NewAccountHandler(createAccountUsecase *usecases.CreateAccountUsecase, findAllAccountsUsecase *usecases.FindAllUsecase) *AccountHandler {
+func NewAccountHandler(createAccountUsecase *usecases.CreateAccountUsecase, findAllAccountsUsecase *usecases.FindAllUsecase, findOneAccountUsecase *usecases.FindOneAccountUsecase) *AccountHandler {
 	return &AccountHandler{
 		createAccountUsecase:   createAccountUsecase,
 		findAllAccountsUsecase: findAllAccountsUsecase,
+		findOneAccountUsecase:  findOneAccountUsecase,
 	}
 }
 
 func (ah *AccountHandler) Create(c *gin.Context) {
-	tenantId, err := strconv.ParseInt(c.GetHeader("tenant-id"), 0, 32)
+	tenantId, valid := checkTenantHeader(c)
 
-	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid tenant-id"})
+	if !valid {
 		return
 	}
 
@@ -55,31 +55,68 @@ func (ah *AccountHandler) Create(c *gin.Context) {
 			return
 		}
 
-		logInternalServerError(c, "create", err)
+		logInternalServerError(c, "Create", err)
 		return
 	}
 
 	c.JSON(http.StatusCreated, savedAccount)
 }
 
-func (ah *AccountHandler) FindAll(c *gin.Context) {
-	tenantId, err := strconv.ParseInt(c.GetHeader("tenant-id"), 0, 32)
+func (ah *AccountHandler) FindOne(c *gin.Context) {
+	tenantId, valid := checkTenantHeader(c)
+
+	if !valid {
+		return
+	}
+
+	accountId, err := strconv.ParseInt(c.Param("accountId"), 0, 32)
 
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid tenant-id"})
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid account id"})
+		return
+	}
+
+	account, err := ah.findOneAccountUsecase.FindOne(int32(tenantId), int32(accountId))
+
+	if err != nil {
+		if enf, ok := err.(*shared.EntityNotFoundError); ok {
+			c.JSON(http.StatusNotFound, enf.Error())
+			return
+		}
+
+		logInternalServerError(c, "FindOne", err)
+		return
+	}
+
+	c.JSON(http.StatusOK, account)
+}
+
+func (ah *AccountHandler) FindAll(c *gin.Context) {
+	tenantId, valid := checkTenantHeader(c)
+
+	if !valid {
 		return
 	}
 
 	accounts, err := ah.findAllAccountsUsecase.FindAll(int32(tenantId))
 
 	if err != nil {
-		logInternalServerError(c, "findAll", err)
+		logInternalServerError(c, "FindAll", err)
 		return
 	}
 
-	fmt.Println(accounts)
-
 	c.JSON(http.StatusOK, accounts)
+}
+
+func checkTenantHeader(c *gin.Context) (int32, bool) {
+	tenantId, err := strconv.ParseInt(c.GetHeader("tenant-id"), 0, 32)
+
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid tenant-id"})
+		return -1, false
+	}
+
+	return int32(tenantId), true
 }
 
 func logInternalServerError(c *gin.Context, method string, err error) {
