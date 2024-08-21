@@ -23,8 +23,9 @@ func TestAccountHandler(t *testing.T) {
 
 	mockRepo := new(mocks.MockAccountRepository)
 	accountCreateUsecase := usecases.NewCreateAccountUsecase(mockRepo)
+	findOneAccountUsecase := usecases.NewFindOneAccountUsecase(mockRepo)
 	findAllAccountsUsecase := usecases.NewFindAllAccountsUsecase(mockRepo)
-	sut := NewAccountHandler(accountCreateUsecase, findAllAccountsUsecase)
+	sut := NewAccountHandler(accountCreateUsecase, findAllAccountsUsecase, findOneAccountUsecase)
 
 	number := uuid.New().String()
 
@@ -50,8 +51,28 @@ func TestAccountHandler(t *testing.T) {
 
 		sut.Create(c)
 
+		var responseBody map[string]string
+		json.NewDecoder(res.Body).Decode(&responseBody)
+
 		assert.Equal(t, http.StatusBadRequest, res.Result().StatusCode)
-		assert.Equal(t, "{\"error\":\"Decoding Error\"}", res.Body.String()) // TODO: improve the comparison
+		assert.Equal(t, "Decoding Error", responseBody["error"])
+	})
+
+	t.Run("[Create] Invalid tenant id", func(t *testing.T) {
+		res := httptest.NewRecorder()
+		c, _ := gin.CreateTestContext(res)
+
+		c.Request = httptest.NewRequest("POST", "/account", bytes.NewBuffer([]byte("")))
+		c.Request.Header.Set("Content-Type", "application/json")
+		c.Request.Header.Set("tenant-id", "invalid")
+
+		sut.Create(c)
+
+		var responseBody map[string]string
+		json.NewDecoder(res.Body).Decode(&responseBody)
+
+		assert.Equal(t, http.StatusBadRequest, res.Result().StatusCode)
+		assert.Equal(t, "Invalid tenant-id", responseBody["error"])
 	})
 
 	t.Run("[Create] Account already exists error bad request", func(t *testing.T) {
@@ -71,9 +92,12 @@ func TestAccountHandler(t *testing.T) {
 
 		sut.Create(c)
 
+		var responseBody map[string]string
+		json.NewDecoder(res.Body).Decode(&responseBody)
+
 		assert.Equal(t, http.StatusBadRequest, res.Result().StatusCode)
-		assert.Equal(t, fmt.Sprintf("{\"error\":\"account already exists with id %s\"}", account.Number),
-			res.Body.String())
+		assert.Equal(t, fmt.Sprintf("account already exists with id %s", account.Number),
+			responseBody["error"])
 	})
 
 	t.Run("[Create] Invalid input error bad request", func(t *testing.T) {
@@ -99,7 +123,7 @@ func TestAccountHandler(t *testing.T) {
 		sut.Create(c)
 
 		var responseBody map[string]string
-		err = json.NewDecoder(res.Body).Decode(&responseBody)
+		json.NewDecoder(res.Body).Decode(&responseBody)
 
 		assert.NoError(t, err)
 
@@ -125,8 +149,11 @@ func TestAccountHandler(t *testing.T) {
 
 		sut.Create(c)
 
+		var responseBody map[string]string
+		json.NewDecoder(res.Body).Decode(&responseBody)
+
 		assert.Equal(t, http.StatusInternalServerError, res.Result().StatusCode)
-		assert.Equal(t, "{\"error\":\"Internal Server Error\"}", res.Body.String())
+		assert.Equal(t, "Internal Server Error", responseBody["error"])
 	})
 
 	t.Run("[Create] Account created successfully", func(t *testing.T) {
@@ -150,11 +177,206 @@ func TestAccountHandler(t *testing.T) {
 		sut.Create(c)
 
 		var responseBody domain.Account
-		err = json.NewDecoder(res.Body).Decode(&responseBody)
+		json.NewDecoder(res.Body).Decode(&responseBody)
 
 		assert.NoError(t, err)
 
 		assert.Equal(t, http.StatusCreated, res.Result().StatusCode)
 		assert.Equal(t, *account, responseBody)
+	})
+
+	t.Run("[FindOne] Invalid tenant id", func(t *testing.T) {
+		res := httptest.NewRecorder()
+		c, _ := gin.CreateTestContext(res)
+
+		c.Request = httptest.NewRequest("GET", "/account", nil)
+		c.Request.Header.Set("Content-Type", "application/json")
+		c.Request.Header.Set("tenant-id", "invalid")
+
+		sut.FindOne(c)
+
+		var responseBody map[string]string
+		json.NewDecoder(res.Body).Decode(&responseBody)
+
+		assert.Equal(t, http.StatusBadRequest, res.Result().StatusCode)
+		assert.Equal(t, "Invalid tenant-id", responseBody["error"])
+	})
+
+	t.Run("[FindOne] Invalid account id", func(t *testing.T) {
+		res := httptest.NewRecorder()
+		c, _ := gin.CreateTestContext(res)
+
+		c.Request = httptest.NewRequest("GET", "/account", nil)
+		c.Request.Header.Set("Content-Type", "application/json")
+		c.Request.Header.Set("tenant-id", "1")
+		c.Params = []gin.Param{{
+			Key:   "accountId",
+			Value: "invalid",
+		}}
+
+		sut.FindOne(c)
+
+		var responseBody map[string]string
+		json.NewDecoder(res.Body).Decode(&responseBody)
+
+		assert.Equal(t, http.StatusBadRequest, res.Result().StatusCode)
+		assert.Equal(t, "Invalid account id", responseBody["error"])
+	})
+
+	t.Run("[FindOne] Account not found by id", func(t *testing.T) {
+		mockRepo.On("FindById").Return(nil, nil)
+		defer mockRepo.On("FindById").Unset()
+
+		accountId := "1"
+
+		res := httptest.NewRecorder()
+		c, _ := gin.CreateTestContext(res)
+
+		c.Request = httptest.NewRequest("GET", "/account", nil)
+		c.Request.Header.Set("Content-Type", "application/json")
+		c.Request.Header.Set("tenant-id", "1")
+		c.Params = []gin.Param{{
+			Key:   "accountId",
+			Value: accountId,
+		}}
+
+		sut.FindOne(c)
+
+		var responseBody string
+		json.NewDecoder(res.Body).Decode(&responseBody)
+
+		assert.Equal(t, http.StatusNotFound, res.Result().StatusCode)
+		assert.Equal(t, fmt.Sprintf("account not found with id %s", accountId), responseBody)
+	})
+
+	t.Run("[FindOne] Internal server error", func(t *testing.T) {
+		mockRepo.On("FindById").Return(nil, errors.New("Internal server error"))
+		defer mockRepo.On("FindById").Unset()
+
+		res := httptest.NewRecorder()
+		c, _ := gin.CreateTestContext(res)
+
+		c.Request = httptest.NewRequest("GET", "/account", nil)
+		c.Request.Header.Set("Content-Type", "application/json")
+		c.Request.Header.Set("tenant-id", "1")
+		c.Params = []gin.Param{{
+			Key:   "accountId",
+			Value: "1",
+		}}
+
+		sut.FindOne(c)
+
+		var responseBody map[string]string
+		json.NewDecoder(res.Body).Decode(&responseBody)
+
+		assert.Equal(t, http.StatusInternalServerError, res.Result().StatusCode)
+		assert.Equal(t, "Internal Server Error", responseBody["error"])
+	})
+
+	t.Run("[FindOne] Success", func(t *testing.T) {
+		mockRepo.On("FindById").Return(account, nil)
+		defer mockRepo.On("FindById").Unset()
+
+		res := httptest.NewRecorder()
+		c, _ := gin.CreateTestContext(res)
+
+		c.Request = httptest.NewRequest("GET", "/account", nil)
+		c.Request.Header.Set("Content-Type", "application/json")
+		c.Request.Header.Set("tenant-id", "1")
+		c.Params = []gin.Param{{
+			Key:   "accountId",
+			Value: "1",
+		}}
+
+		sut.FindOne(c)
+
+		var responseBody domain.Account
+		json.NewDecoder(res.Body).Decode(&responseBody)
+
+		assert.Equal(t, http.StatusOK, res.Result().StatusCode)
+		assert.Equal(t, *account, responseBody)
+	})
+
+	t.Run("[FindAll] Invalid tenant id", func(t *testing.T) {
+		res := httptest.NewRecorder()
+		c, _ := gin.CreateTestContext(res)
+
+		c.Request = httptest.NewRequest("GET", "/account", nil)
+		c.Request.Header.Set("Content-Type", "application/json")
+		c.Request.Header.Set("tenant-id", "invalid")
+
+		sut.FindAll(c)
+
+		var responseBody map[string]string
+		json.NewDecoder(res.Body).Decode(&responseBody)
+
+		assert.Equal(t, http.StatusBadRequest, res.Result().StatusCode)
+		assert.Equal(t, "Invalid tenant-id", responseBody["error"])
+	})
+
+	t.Run("[FindAll] Internal server error", func(t *testing.T) {
+		mockRepo.On("FindAll").Return(nil, errors.New("Internal server error"))
+		defer mockRepo.On("FindAll").Unset()
+
+		res := httptest.NewRecorder()
+		c, _ := gin.CreateTestContext(res)
+
+		c.Request = httptest.NewRequest("GET", "/account", nil)
+		c.Request.Header.Set("Content-Type", "application/json")
+		c.Request.Header.Set("tenant-id", "1")
+
+		sut.FindAll(c)
+
+		var responseBody map[string]string
+		json.NewDecoder(res.Body).Decode(&responseBody)
+
+		assert.Equal(t, http.StatusInternalServerError, res.Result().StatusCode)
+		assert.Equal(t, "Internal Server Error", responseBody["error"])
+	})
+
+	t.Run("[FindAll] Success with empty array", func(t *testing.T) {
+		accounts := make([]*domain.Account, 0)
+
+		mockRepo.On("FindAll").Return(accounts, nil)
+		defer mockRepo.On("FindAll").Unset()
+
+		res := httptest.NewRecorder()
+		c, _ := gin.CreateTestContext(res)
+
+		c.Request = httptest.NewRequest("GET", "/account", nil)
+		c.Request.Header.Set("Content-Type", "application/json")
+		c.Request.Header.Set("tenant-id", "1")
+
+		sut.FindAll(c)
+
+		var responseBody []*domain.Account
+		json.NewDecoder(res.Body).Decode(&responseBody)
+
+		assert.Equal(t, http.StatusOK, res.Result().StatusCode)
+		assert.Equal(t, accounts, responseBody)
+	})
+
+	t.Run("[FindAll] Success", func(t *testing.T) {
+		accounts := make([]*domain.Account, 0)
+		accounts = append(accounts, account)
+
+		mockRepo.On("FindAll").Return(accounts, nil)
+		defer mockRepo.On("FindAll").Unset()
+
+		res := httptest.NewRecorder()
+		c, _ := gin.CreateTestContext(res)
+
+		c.Request = httptest.NewRequest("GET", "/account", nil)
+		c.Request.Header.Set("Content-Type", "application/json")
+		c.Request.Header.Set("tenant-id", "1")
+
+		sut.FindAll(c)
+
+		var responseBody []*domain.Account
+		json.NewDecoder(res.Body).Decode(&responseBody)
+
+		assert.Equal(t, http.StatusOK, res.Result().StatusCode)
+		assert.Len(t, responseBody, 1)
+		assert.Equal(t, accounts, responseBody)
 	})
 }
