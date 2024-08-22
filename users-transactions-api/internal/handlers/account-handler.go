@@ -80,7 +80,7 @@ func (ah *AccountHandler) FindOne(c *gin.Context) {
 
 	if err != nil {
 		if enf, ok := err.(*shared.EntityNotFoundError); ok {
-			c.JSON(http.StatusNotFound, enf.Error())
+			c.JSON(http.StatusNotFound, gin.H{"error": enf.Error()})
 			return
 		}
 

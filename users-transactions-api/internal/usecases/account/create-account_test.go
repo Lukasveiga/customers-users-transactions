@@ -24,7 +24,7 @@ func TestCreateAccountUsecase(t *testing.T) {
 
 	sut := NewCreateAccountUsecase(mockRepo)
 
-	t.Run("Error to find accout", func(t *testing.T) {
+	t.Run("Error to find account", func(t *testing.T) {
 		expectedErr := errors.New("internal repo error")
 
 		mockRepo.On("FindByNumber").Return(nil, expectedErr)

@@ -242,11 +242,11 @@ func TestAccountHandler(t *testing.T) {
 
 		sut.FindOne(c)
 
-		var responseBody string
+		var responseBody map[string]string
 		json.NewDecoder(res.Body).Decode(&responseBody)
 
 		assert.Equal(t, http.StatusNotFound, res.Result().StatusCode)
-		assert.Equal(t, fmt.Sprintf("account not found with id %s", accountId), responseBody)
+		assert.Equal(t, fmt.Sprintf("account not found with id %s", accountId), responseBody["error"])
 	})
 
 	t.Run("[FindOne] Internal server error", func(t *testing.T) {
