@@ -56,7 +56,12 @@ func (mock *MockAccountRepository) FindByNumber(tenantId int32, number string) (
 func (mock *MockAccountRepository) Update(id int32, account *domain.Account) (*domain.Account, error) {
 	args := mock.Called()
 	result := args.Get(0)
-	return result.(*domain.Account), args.Error(1)
+
+	if result != nil {
+		return result.(*domain.Account), args.Error(1)
+	}
+
+	return nil, args.Error(1)
 }
 
 func (mock *MockAccountRepository) Delete(id int32) error {
