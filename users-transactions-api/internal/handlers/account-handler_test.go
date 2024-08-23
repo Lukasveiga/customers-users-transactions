@@ -25,7 +25,9 @@ func TestAccountHandler(t *testing.T) {
 	accountCreateUsecase := usecases.NewCreateAccountUsecase(mockRepo)
 	findOneAccountUsecase := usecases.NewFindOneAccountUsecase(mockRepo)
 	findAllAccountsUsecase := usecases.NewFindAllAccountsUsecase(mockRepo)
-	sut := NewAccountHandler(accountCreateUsecase, findAllAccountsUsecase, findOneAccountUsecase)
+	updateAccountUsecase := usecases.NewUpdateAccountUsecase(mockRepo)
+	deleteAccountUSecase := usecases.NewDeleteAccountUsecase(mockRepo)
+	sut := NewAccountHandler(accountCreateUsecase, findAllAccountsUsecase, findOneAccountUsecase, updateAccountUsecase, deleteAccountUSecase)
 
 	number := uuid.New().String()
 
@@ -52,7 +54,9 @@ func TestAccountHandler(t *testing.T) {
 		sut.Create(c)
 
 		var responseBody map[string]string
-		json.NewDecoder(res.Body).Decode(&responseBody)
+		err := json.NewDecoder(res.Body).Decode(&responseBody)
+
+		assert.NoError(t, err)
 
 		assert.Equal(t, http.StatusBadRequest, res.Result().StatusCode)
 		assert.Equal(t, "Decoding Error", responseBody["error"])
@@ -69,7 +73,9 @@ func TestAccountHandler(t *testing.T) {
 		sut.Create(c)
 
 		var responseBody map[string]string
-		json.NewDecoder(res.Body).Decode(&responseBody)
+		err := json.NewDecoder(res.Body).Decode(&responseBody)
+
+		assert.NoError(t, err)
 
 		assert.Equal(t, http.StatusBadRequest, res.Result().StatusCode)
 		assert.Equal(t, "Invalid tenant-id", responseBody["error"])
@@ -93,7 +99,9 @@ func TestAccountHandler(t *testing.T) {
 		sut.Create(c)
 
 		var responseBody map[string]string
-		json.NewDecoder(res.Body).Decode(&responseBody)
+		err = json.NewDecoder(res.Body).Decode(&responseBody)
+
+		assert.NoError(t, err)
 
 		assert.Equal(t, http.StatusBadRequest, res.Result().StatusCode)
 		assert.Equal(t, fmt.Sprintf("account already exists with id %s", account.Number),
@@ -123,7 +131,7 @@ func TestAccountHandler(t *testing.T) {
 		sut.Create(c)
 
 		var responseBody map[string]string
-		json.NewDecoder(res.Body).Decode(&responseBody)
+		err = json.NewDecoder(res.Body).Decode(&responseBody)
 
 		assert.NoError(t, err)
 
@@ -150,7 +158,9 @@ func TestAccountHandler(t *testing.T) {
 		sut.Create(c)
 
 		var responseBody map[string]string
-		json.NewDecoder(res.Body).Decode(&responseBody)
+		err = json.NewDecoder(res.Body).Decode(&responseBody)
+
+		assert.NoError(t, err)
 
 		assert.Equal(t, http.StatusInternalServerError, res.Result().StatusCode)
 		assert.Equal(t, "Internal Server Error", responseBody["error"])
@@ -177,7 +187,7 @@ func TestAccountHandler(t *testing.T) {
 		sut.Create(c)
 
 		var responseBody domain.Account
-		json.NewDecoder(res.Body).Decode(&responseBody)
+		err = json.NewDecoder(res.Body).Decode(&responseBody)
 
 		assert.NoError(t, err)
 
@@ -196,7 +206,9 @@ func TestAccountHandler(t *testing.T) {
 		sut.FindOne(c)
 
 		var responseBody map[string]string
-		json.NewDecoder(res.Body).Decode(&responseBody)
+		err := json.NewDecoder(res.Body).Decode(&responseBody)
+
+		assert.NoError(t, err)
 
 		assert.Equal(t, http.StatusBadRequest, res.Result().StatusCode)
 		assert.Equal(t, "Invalid tenant-id", responseBody["error"])
@@ -217,7 +229,9 @@ func TestAccountHandler(t *testing.T) {
 		sut.FindOne(c)
 
 		var responseBody map[string]string
-		json.NewDecoder(res.Body).Decode(&responseBody)
+		err := json.NewDecoder(res.Body).Decode(&responseBody)
+
+		assert.NoError(t, err)
 
 		assert.Equal(t, http.StatusBadRequest, res.Result().StatusCode)
 		assert.Equal(t, "Invalid account id", responseBody["error"])
@@ -243,7 +257,9 @@ func TestAccountHandler(t *testing.T) {
 		sut.FindOne(c)
 
 		var responseBody map[string]string
-		json.NewDecoder(res.Body).Decode(&responseBody)
+		err := json.NewDecoder(res.Body).Decode(&responseBody)
+
+		assert.NoError(t, err)
 
 		assert.Equal(t, http.StatusNotFound, res.Result().StatusCode)
 		assert.Equal(t, fmt.Sprintf("account not found with id %s", accountId), responseBody["error"])
@@ -267,7 +283,9 @@ func TestAccountHandler(t *testing.T) {
 		sut.FindOne(c)
 
 		var responseBody map[string]string
-		json.NewDecoder(res.Body).Decode(&responseBody)
+		err := json.NewDecoder(res.Body).Decode(&responseBody)
+
+		assert.NoError(t, err)
 
 		assert.Equal(t, http.StatusInternalServerError, res.Result().StatusCode)
 		assert.Equal(t, "Internal Server Error", responseBody["error"])
@@ -291,7 +309,9 @@ func TestAccountHandler(t *testing.T) {
 		sut.FindOne(c)
 
 		var responseBody domain.Account
-		json.NewDecoder(res.Body).Decode(&responseBody)
+		err := json.NewDecoder(res.Body).Decode(&responseBody)
+
+		assert.NoError(t, err)
 
 		assert.Equal(t, http.StatusOK, res.Result().StatusCode)
 		assert.Equal(t, *account, responseBody)
@@ -308,7 +328,9 @@ func TestAccountHandler(t *testing.T) {
 		sut.FindAll(c)
 
 		var responseBody map[string]string
-		json.NewDecoder(res.Body).Decode(&responseBody)
+		err := json.NewDecoder(res.Body).Decode(&responseBody)
+
+		assert.NoError(t, err)
 
 		assert.Equal(t, http.StatusBadRequest, res.Result().StatusCode)
 		assert.Equal(t, "Invalid tenant-id", responseBody["error"])
@@ -328,7 +350,9 @@ func TestAccountHandler(t *testing.T) {
 		sut.FindAll(c)
 
 		var responseBody map[string]string
-		json.NewDecoder(res.Body).Decode(&responseBody)
+		err := json.NewDecoder(res.Body).Decode(&responseBody)
+
+		assert.NoError(t, err)
 
 		assert.Equal(t, http.StatusInternalServerError, res.Result().StatusCode)
 		assert.Equal(t, "Internal Server Error", responseBody["error"])
@@ -350,7 +374,9 @@ func TestAccountHandler(t *testing.T) {
 		sut.FindAll(c)
 
 		var responseBody []*domain.Account
-		json.NewDecoder(res.Body).Decode(&responseBody)
+		err := json.NewDecoder(res.Body).Decode(&responseBody)
+
+		assert.NoError(t, err)
 
 		assert.Equal(t, http.StatusOK, res.Result().StatusCode)
 		assert.Equal(t, accounts, responseBody)
@@ -373,7 +399,9 @@ func TestAccountHandler(t *testing.T) {
 		sut.FindAll(c)
 
 		var responseBody []*domain.Account
-		json.NewDecoder(res.Body).Decode(&responseBody)
+		err := json.NewDecoder(res.Body).Decode(&responseBody)
+
+		assert.NoError(t, err)
 
 		assert.Equal(t, http.StatusOK, res.Result().StatusCode)
 		assert.Len(t, responseBody, 1)

@@ -266,7 +266,7 @@ func TestPostgreAccountRepository(t *testing.T) {
 			fmt.Sprintf("Key (tenant_id)=(%d) is not present in table \"tenants\".", updateAccount.TenantId))
 	})
 
-	t.Run("[Delete] should delete an account by id", func(t *testing.T) {
+	t.Run("[Delete] should delete an account by id and tenantId", func(t *testing.T) {
 		account := &domain.Account{
 			TenantId: 4,
 			Number:   uuid.New().String(),
@@ -277,7 +277,7 @@ func TestPostgreAccountRepository(t *testing.T) {
 
 		assert.NoError(t, err)
 
-		err = pgAccountRepository.Delete(savedAccount.Id)
+		err = pgAccountRepository.Delete(savedAccount.TenantId, savedAccount.Id)
 
 		assert.NoError(t, err)
 
@@ -289,7 +289,7 @@ func TestPostgreAccountRepository(t *testing.T) {
 	})
 
 	t.Run("[Delete] should return error when delete account with account id", func(t *testing.T) {
-		err := pgAccountRepository.Delete(15)
+		err := pgAccountRepository.Delete(15, 15)
 
 		assert.Equal(t, sql.ErrNoRows, err)
 	})

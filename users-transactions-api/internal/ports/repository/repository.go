@@ -8,7 +8,7 @@ type AccountRepository interface {
 	FindById(tenantId int32, id int32) (*domain.Account, error)
 	FindByNumber(tenantId int32, number string) (*domain.Account, error)
 	Update(id int32, account *domain.Account) (*domain.Account, error)
-	Delete(id int32) error
+	Delete(tenantId int32, id int32) error
 }
 
 type CardRepository interface {

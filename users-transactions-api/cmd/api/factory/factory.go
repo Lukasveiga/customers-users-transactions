@@ -23,10 +23,12 @@ func InitHandlers(dbConnection *sql.DB) *Handlers {
 	createAccountUsecase := accountUsecases.NewCreateAccountUsecase(accountPgRepository)
 	findOneAccountUsecase := accountUsecases.NewFindOneAccountUsecase(accountPgRepository)
 	findAllAccountsUsecase := accountUsecases.NewFindAllAccountsUsecase(accountPgRepository)
+	updateAccountUsecase := accountUsecases.NewUpdateAccountUsecase(accountPgRepository)
+	deleteAaccountUsecase := accountUsecases.NewDeleteAccountUsecase(accountPgRepository)
 
 	findOneTenantUseCase := tenantUsecases.NewFindOneTenantUseCase(tenantPgRepository)
 
-	accountHandler := handlers.NewAccountHandler(createAccountUsecase, findAllAccountsUsecase, findOneAccountUsecase)
+	accountHandler := handlers.NewAccountHandler(createAccountUsecase, findAllAccountsUsecase, findOneAccountUsecase, updateAccountUsecase, deleteAaccountUsecase)
 	tenantHandler := handlers.NewTenantHandler(findOneTenantUseCase)
 
 	return &Handlers{

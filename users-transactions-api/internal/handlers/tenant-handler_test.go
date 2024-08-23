@@ -44,7 +44,9 @@ func TestTenantHandler(t *testing.T) {
 		nextHandler(c)
 
 		var responseBody map[string]string
-		json.NewDecoder(res.Body).Decode(&responseBody)
+		err := json.NewDecoder(res.Body).Decode(&responseBody)
+
+		assert.NoError(t, err)
 
 		assert.Equal(t, http.StatusBadRequest, res.Result().StatusCode)
 		assert.Equal(t, "invalid tenant id", responseBody["error"])
@@ -71,7 +73,9 @@ func TestTenantHandler(t *testing.T) {
 		nextHandler(c)
 
 		var responseBody map[string]string
-		json.NewDecoder(res.Body).Decode(&responseBody)
+		err := json.NewDecoder(res.Body).Decode(&responseBody)
+
+		assert.NoError(t, err)
 
 		assert.Equal(t, http.StatusBadRequest, res.Result().StatusCode)
 		assert.Equal(t, fmt.Sprintf("\"tenant not found with id %s\"", tenantId),
@@ -101,7 +105,9 @@ func TestTenantHandler(t *testing.T) {
 		nextHandler(c)
 
 		var responseBody map[string]string
-		json.NewDecoder(res.Body).Decode(&responseBody)
+		err := json.NewDecoder(res.Body).Decode(&responseBody)
+
+		assert.NoError(t, err)
 
 		assert.Equal(t, http.StatusInternalServerError, res.Result().StatusCode)
 		assert.Equal(t, "Internal Server Error", responseBody["error"])
