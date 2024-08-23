@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"fmt"
 	"log/slog"
 	"net/http"
 	"strconv"
@@ -16,14 +17,16 @@ type AccountHandler struct {
 	findAllAccountsUsecase *usecases.FindAllUsecase
 	findOneAccountUsecase  *usecases.FindOneAccountUsecase
 	updateAccountUsecase   *usecases.UpdateAccountUsecase
+	deleteAccountUsecase   *usecases.DeleteAccountUsecase
 }
 
-func NewAccountHandler(createAccountUsecase *usecases.CreateAccountUsecase, findAllAccountsUsecase *usecases.FindAllUsecase, findOneAccountUsecase *usecases.FindOneAccountUsecase, updateAccountUsecase *usecases.UpdateAccountUsecase) *AccountHandler {
+func NewAccountHandler(createAccountUsecase *usecases.CreateAccountUsecase, findAllAccountsUsecase *usecases.FindAllUsecase, findOneAccountUsecase *usecases.FindOneAccountUsecase, updateAccountUsecase *usecases.UpdateAccountUsecase, deleteAccountUsecase *usecases.DeleteAccountUsecase) *AccountHandler {
 	return &AccountHandler{
 		createAccountUsecase:   createAccountUsecase,
 		findAllAccountsUsecase: findAllAccountsUsecase,
 		findOneAccountUsecase:  findOneAccountUsecase,
 		updateAccountUsecase:   updateAccountUsecase,
+		deleteAccountUsecase:   deleteAccountUsecase,
 	}
 }
 
@@ -157,6 +160,35 @@ func (ah *AccountHandler) Update(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, updatedAccount)
+}
+
+func (ah *AccountHandler) Delete(c *gin.Context) {
+	tenantId, valid := checkTenantHeader(c)
+
+	if !valid {
+		return
+	}
+
+	accountId, err := strconv.ParseInt(c.Param("accountId"), 0, 32)
+
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid account id"})
+		return
+	}
+
+	err = ah.deleteAccountUsecase.Delete(tenantId, int32(accountId))
+
+	if err != nil {
+		if enf, ok := err.(*shared.EntityNotFoundError); ok {
+			c.JSON(http.StatusBadRequest, gin.H{"error": enf.Error()})
+			return
+		}
+
+		logInternalServerError(c, "Update", err)
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"message": fmt.Sprintf("Account with id %d was deleted successfully", accountId)})
 }
 
 func checkTenantHeader(c *gin.Context) (int32, bool) {

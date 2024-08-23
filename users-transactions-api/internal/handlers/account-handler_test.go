@@ -26,7 +26,8 @@ func TestAccountHandler(t *testing.T) {
 	findOneAccountUsecase := usecases.NewFindOneAccountUsecase(mockRepo)
 	findAllAccountsUsecase := usecases.NewFindAllAccountsUsecase(mockRepo)
 	updateAccountUsecase := usecases.NewUpdateAccountUsecase(mockRepo)
-	sut := NewAccountHandler(accountCreateUsecase, findAllAccountsUsecase, findOneAccountUsecase, updateAccountUsecase)
+	deleteAccountUSecase := usecases.NewDeleteAccountUsecase(mockRepo)
+	sut := NewAccountHandler(accountCreateUsecase, findAllAccountsUsecase, findOneAccountUsecase, updateAccountUsecase, deleteAccountUSecase)
 
 	number := uuid.New().String()
 
