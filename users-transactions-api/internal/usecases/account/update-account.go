@@ -60,8 +60,11 @@ func (uc *UpdateAccountUsecase) Update(accountId int32, account *domain.Account)
 		return nil, err
 	}
 
-	account.UpdatedAt = time.Now().UTC()
-	updatedAccount, err := uc.repo.Update(accountId, account)
+	existingAccount.UpdatedAt = time.Now().UTC()
+	existingAccount.Number = account.Number
+	existingAccount.Status = account.Status
+
+	updatedAccount, err := uc.repo.Update(accountId, existingAccount)
 
 	if err != nil {
 		slog.Error(

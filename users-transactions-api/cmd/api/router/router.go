@@ -22,6 +22,7 @@ func Routes(handlers *factory.Handlers) *gin.Engine {
 		account.POST("/account", handlers.AccountHandler.Create)
 		account.GET("/account/:accountId", handlers.AccountHandler.FindOne)
 		account.GET("/account", handlers.AccountHandler.FindAll)
+		account.PUT("/account/:accountId", handlers.AccountHandler.Update)
 	}
 
 	return router

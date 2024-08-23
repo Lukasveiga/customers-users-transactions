@@ -163,10 +163,10 @@ func (ar *PgAccountRepository) Update(id int32, account *domain.Account) (*domai
 	return &updatedAccount, nil
 }
 
-func (ar *PgAccountRepository) Delete(id int32) error {
-	query := "UPDATE accounts SET status = 'inactive', deleted_at = NOW() WHERE id = $1"
+func (ar *PgAccountRepository) Delete(tenantId int32, id int32) error {
+	query := "UPDATE accounts SET status = 'inactive', deleted_at = NOW() WHERE id = $1 AND tenant_id = $2"
 
-	result, err := ar.db.Exec(query, id)
+	result, err := ar.db.Exec(query, id, tenantId)
 
 	if err != nil {
 		slog.Error(

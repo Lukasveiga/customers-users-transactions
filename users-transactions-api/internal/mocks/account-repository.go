@@ -64,7 +64,7 @@ func (mock *MockAccountRepository) Update(id int32, account *domain.Account) (*d
 	return nil, args.Error(1)
 }
 
-func (mock *MockAccountRepository) Delete(id int32) error {
+func (mock *MockAccountRepository) Delete(tenantId int32, id int32) error {
 	args := mock.Called()
-	return args.Error(1)
+	return args.Error(0)
 }
