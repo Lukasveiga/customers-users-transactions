@@ -407,4 +407,368 @@ func TestAccountHandler(t *testing.T) {
 		assert.Len(t, responseBody, 1)
 		assert.Equal(t, accounts, responseBody)
 	})
+
+	t.Run("[Update] Invalid tenant id", func(t *testing.T) {
+		res := httptest.NewRecorder()
+		c, _ := gin.CreateTestContext(res)
+
+		c.Request = httptest.NewRequest("PUT", "/account", bytes.NewBuffer([]byte("")))
+		c.Request.Header.Set("Content-Type", "application/json")
+		c.Request.Header.Set("tenant-id", "invalid")
+
+		sut.Update(c)
+
+		var responseBody map[string]string
+		err := json.NewDecoder(res.Body).Decode(&responseBody)
+
+		assert.NoError(t, err)
+
+		assert.Equal(t, http.StatusBadRequest, res.Result().StatusCode)
+		assert.Equal(t, "Invalid tenant-id", responseBody["error"])
+	})
+
+	t.Run("[Update] Decoding error bad request", func(t *testing.T) {
+		res := httptest.NewRecorder()
+		c, _ := gin.CreateTestContext(res)
+
+		c.Request = httptest.NewRequest("PUT", "/account", bytes.NewBuffer([]byte("invalid json")))
+		c.Request.Header.Set("Content-Type", "application/json")
+		c.Request.Header.Set("tenant-id", "1")
+		c.Params = []gin.Param{{
+			Key:   "accountId",
+			Value: "1",
+		}}
+
+		sut.Update(c)
+
+		var responseBody map[string]string
+		err := json.NewDecoder(res.Body).Decode(&responseBody)
+
+		assert.NoError(t, err)
+
+		assert.Equal(t, http.StatusBadRequest, res.Result().StatusCode)
+		assert.Equal(t, "Decoding Error", responseBody["error"])
+	})
+
+	t.Run("[Update] Invalid account Id", func(t *testing.T) {
+		res := httptest.NewRecorder()
+		c, _ := gin.CreateTestContext(res)
+
+		c.Request = httptest.NewRequest("PUT", "/account", bytes.NewBuffer([]byte("invalid json")))
+		c.Request.Header.Set("Content-Type", "application/json")
+		c.Request.Header.Set("tenant-id", "1")
+		c.Params = []gin.Param{{
+			Key:   "accountId",
+			Value: "invalid",
+		}}
+
+		sut.Update(c)
+
+		var responseBody map[string]string
+		err := json.NewDecoder(res.Body).Decode(&responseBody)
+
+		assert.NoError(t, err)
+
+		assert.Equal(t, http.StatusBadRequest, res.Result().StatusCode)
+		assert.Equal(t, "Invalid account id", responseBody["error"])
+	})
+
+	t.Run("[Update] Account not found by id", func(t *testing.T) {
+		mockRepo.On("FindById").Return(nil, nil)
+		defer mockRepo.On("FindById").Unset()
+
+		body, err := json.Marshal(accountDto)
+
+		assert.NoError(t, err)
+
+		res := httptest.NewRecorder()
+		c, _ := gin.CreateTestContext(res)
+
+		accountId := "1"
+
+		c.Request = httptest.NewRequest("PUT", "/account", bytes.NewBuffer([]byte(body)))
+		c.Request.Header.Set("Content-Type", "application/json")
+		c.Request.Header.Set("tenant-id", "1")
+		c.Params = []gin.Param{{
+			Key:   "accountId",
+			Value: accountId,
+		}}
+
+		sut.Update(c)
+
+		var responseBody map[string]string
+		err = json.NewDecoder(res.Body).Decode(&responseBody)
+
+		assert.NoError(t, err)
+
+		assert.Equal(t, http.StatusBadRequest, res.Result().StatusCode)
+		assert.Equal(t, fmt.Sprintf("account not found with id %s", accountId),
+			responseBody["error"])
+	})
+
+	t.Run("[Update] Account number already exists", func(t *testing.T) {
+		mockRepo.On("FindById").Return(account, nil)
+		defer mockRepo.On("FindById").Unset()
+
+		mockRepo.On("FindByNumber").Return(account, nil)
+		defer mockRepo.On("FindByNumber").Unset()
+
+		body, err := json.Marshal(accountDto)
+
+		assert.NoError(t, err)
+
+		res := httptest.NewRecorder()
+		c, _ := gin.CreateTestContext(res)
+
+		c.Request = httptest.NewRequest("PUT", "/account", bytes.NewBuffer([]byte(body)))
+		c.Request.Header.Set("Content-Type", "application/json")
+		c.Request.Header.Set("tenant-id", "1")
+		c.Params = []gin.Param{{
+			Key:   "accountId",
+			Value: "2",
+		}}
+
+		sut.Update(c)
+
+		var responseBody map[string]string
+		err = json.NewDecoder(res.Body).Decode(&responseBody)
+
+		assert.NoError(t, err)
+
+		assert.Equal(t, http.StatusBadRequest, res.Result().StatusCode)
+		assert.Equal(t, fmt.Sprintf("account already exists with id %s", account.Number),
+			responseBody["error"])
+	})
+
+	t.Run("[Update] Invalid input error bad request", func(t *testing.T) {
+		mockRepo.On("FindById").Return(account, nil)
+		defer mockRepo.On("FindById").Unset()
+
+		mockRepo.On("FindByNumber").Return(nil, nil)
+		defer mockRepo.On("FindByNumber").Unset()
+
+		invalidAccountDto := &dtos.AccountDto{
+			Number: "1",
+			Status: "invalid",
+		}
+
+		body, err := json.Marshal(invalidAccountDto)
+
+		assert.NoError(t, err)
+
+		res := httptest.NewRecorder()
+		c, _ := gin.CreateTestContext(res)
+
+		c.Request = httptest.NewRequest("PUT", "/account", bytes.NewBuffer([]byte(body)))
+		c.Request.Header.Set("Content-Type", "application/json")
+		c.Request.Header.Set("tenant-id", "1")
+		c.Params = []gin.Param{{
+			Key:   "accountId",
+			Value: "1",
+		}}
+
+		sut.Update(c)
+
+		var responseBody map[string]string
+		err = json.NewDecoder(res.Body).Decode(&responseBody)
+
+		assert.NoError(t, err)
+
+		assert.Equal(t, http.StatusBadRequest, res.Result().StatusCode)
+		assert.Equal(t, "must be a valid uuid", responseBody["number"])
+		assert.Equal(t, "must be active or inactive", responseBody["status"])
+	})
+
+	t.Run("[Update] Internal server error", func(t *testing.T) {
+		mockRepo.On("FindById").Return(account, errors.New("Internal server error"))
+		defer mockRepo.On("FindById").Unset()
+
+		body, err := json.Marshal(accountDto)
+
+		assert.NoError(t, err)
+
+		res := httptest.NewRecorder()
+		c, _ := gin.CreateTestContext(res)
+
+		c.Request = httptest.NewRequest("PUT", "/account", bytes.NewBuffer([]byte(body)))
+		c.Request.Header.Set("Content-Type", "application/json")
+		c.Request.Header.Set("tenant-id", "1")
+		c.Params = []gin.Param{{
+			Key:   "accountId",
+			Value: "1",
+		}}
+
+		sut.Update(c)
+
+		var responseBody map[string]string
+		err = json.NewDecoder(res.Body).Decode(&responseBody)
+
+		assert.NoError(t, err)
+
+		assert.Equal(t, http.StatusInternalServerError, res.Result().StatusCode)
+		assert.Equal(t, "Internal Server Error", responseBody["error"])
+	})
+
+	t.Run("[Update] Account updated successfully", func(t *testing.T) {
+		mockRepo.On("FindById").Return(account, nil)
+		defer mockRepo.On("FindById").Unset()
+
+		mockRepo.On("FindByNumber").Return(nil, nil)
+		defer mockRepo.On("FindByNumber").Unset()
+
+		mockRepo.On("Update").Return(account, nil)
+		defer mockRepo.On("Update").Unset()
+
+		body, err := json.Marshal(accountDto)
+
+		assert.NoError(t, err)
+
+		res := httptest.NewRecorder()
+		c, _ := gin.CreateTestContext(res)
+
+		c.Request = httptest.NewRequest("PUT", "/account", bytes.NewBuffer([]byte(body)))
+		c.Request.Header.Set("Content-Type", "application/json")
+		c.Request.Header.Set("tenant-id", "1")
+		c.Params = []gin.Param{{
+			Key:   "accountId",
+			Value: "1",
+		}}
+
+		sut.Update(c)
+
+		var responseBody domain.Account
+		err = json.NewDecoder(res.Body).Decode(&responseBody)
+
+		assert.NoError(t, err)
+
+		assert.Equal(t, http.StatusOK, res.Result().StatusCode)
+		assert.Equal(t, *account, responseBody)
+	})
+
+	t.Run("[Delete] Invalid tenant id", func(t *testing.T) {
+		res := httptest.NewRecorder()
+		c, _ := gin.CreateTestContext(res)
+
+		c.Request = httptest.NewRequest("DELETE", "/account", bytes.NewBuffer([]byte("")))
+		c.Request.Header.Set("Content-Type", "application/json")
+		c.Request.Header.Set("tenant-id", "invalid")
+
+		sut.Delete(c)
+
+		var responseBody map[string]string
+		err := json.NewDecoder(res.Body).Decode(&responseBody)
+
+		assert.NoError(t, err)
+
+		assert.Equal(t, http.StatusBadRequest, res.Result().StatusCode)
+		assert.Equal(t, "Invalid tenant-id", responseBody["error"])
+	})
+
+	t.Run("[Delete] Invalid account id", func(t *testing.T) {
+		res := httptest.NewRecorder()
+		c, _ := gin.CreateTestContext(res)
+
+		c.Request = httptest.NewRequest("DELETE", "/account", bytes.NewBuffer([]byte("")))
+		c.Request.Header.Set("Content-Type", "application/json")
+		c.Request.Header.Set("tenant-id", "1")
+		c.Params = []gin.Param{{
+			Key:   "accountId",
+			Value: "invalid",
+		}}
+
+		sut.Delete(c)
+
+		var responseBody map[string]string
+		err := json.NewDecoder(res.Body).Decode(&responseBody)
+
+		assert.NoError(t, err)
+
+		assert.Equal(t, http.StatusBadRequest, res.Result().StatusCode)
+		assert.Equal(t, "Invalid account id", responseBody["error"])
+	})
+
+	t.Run("[Delete] Account not found by id", func(t *testing.T) {
+		mockRepo.On("FindById").Return(nil, nil)
+		defer mockRepo.On("FindById").Unset()
+
+		res := httptest.NewRecorder()
+		c, _ := gin.CreateTestContext(res)
+
+		accountId := "1"
+
+		c.Request = httptest.NewRequest("DELETE", "/account", bytes.NewBuffer([]byte("")))
+		c.Request.Header.Set("Content-Type", "application/json")
+		c.Request.Header.Set("tenant-id", "1")
+		c.Params = []gin.Param{{
+			Key:   "accountId",
+			Value: accountId,
+		}}
+
+		sut.Delete(c)
+
+		var responseBody map[string]string
+		err := json.NewDecoder(res.Body).Decode(&responseBody)
+
+		assert.NoError(t, err)
+
+		assert.Equal(t, http.StatusBadRequest, res.Result().StatusCode)
+		assert.Equal(t, fmt.Sprintf("account not found with id %s", accountId),
+			responseBody["error"])
+	})
+
+	t.Run("[Delete] Internal server error", func(t *testing.T) {
+		mockRepo.On("FindById").Return(nil, errors.New("Internal server error"))
+		defer mockRepo.On("FindById").Unset()
+
+		res := httptest.NewRecorder()
+		c, _ := gin.CreateTestContext(res)
+
+		c.Request = httptest.NewRequest("DELETE", "/account", bytes.NewBuffer([]byte("")))
+		c.Request.Header.Set("Content-Type", "application/json")
+		c.Request.Header.Set("tenant-id", "1")
+		c.Params = []gin.Param{{
+			Key:   "accountId",
+			Value: "1",
+		}}
+
+		sut.Delete(c)
+
+		var responseBody map[string]string
+		err := json.NewDecoder(res.Body).Decode(&responseBody)
+
+		assert.NoError(t, err)
+
+		assert.Equal(t, http.StatusInternalServerError, res.Result().StatusCode)
+		assert.Equal(t, "Internal Server Error", responseBody["error"])
+	})
+
+	t.Run("[Delete] Account deleted successfully", func(t *testing.T) {
+		mockRepo.On("FindById").Return(account, nil)
+		defer mockRepo.On("FindById").Unset()
+
+		mockRepo.On("Delete").Return(nil)
+		defer mockRepo.On("Delete").Unset()
+
+		res := httptest.NewRecorder()
+		c, _ := gin.CreateTestContext(res)
+
+		c.Request = httptest.NewRequest("DELETE", "/account", bytes.NewBuffer([]byte("")))
+		c.Request.Header.Set("Content-Type", "application/json")
+		c.Request.Header.Set("tenant-id", "1")
+		c.Params = []gin.Param{{
+			Key:   "accountId",
+			Value: "1",
+		}}
+
+		sut.Delete(c)
+
+		var responseBody map[string]string
+		err := json.NewDecoder(res.Body).Decode(&responseBody)
+
+		assert.NoError(t, err)
+
+		assert.Equal(t, http.StatusOK, res.Result().StatusCode)
+		assert.Equal(t, fmt.Sprintf("Account with id %d was deleted successfully", account.Id),
+			responseBody["message"])
+	})
 }
