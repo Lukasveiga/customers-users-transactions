@@ -1,7 +1,6 @@
 package handlers
 
 import (
-	"encoding/json"
 	"log/slog"
 	"net/http"
 	"strconv"
@@ -35,19 +34,7 @@ func (th *TenantHandler) FindTenant() gin.HandlerFunc {
 
 		if err != nil {
 			if ae, ok := err.(*shared.EntityNotFoundError); ok {
-				jsonData, err := json.Marshal(ae.Error())
-				if err != nil {
-					slog.Error(
-						"tenant handler",
-						slog.String("method", "FindTenant"),
-						slog.String("error", err.Error()),
-					)
-					c.JSON(http.StatusInternalServerError, gin.H{"error": "Internal Server Error"})
-					c.Abort()
-					return
-				}
-
-				c.JSON(http.StatusBadRequest, gin.H{"error": string(jsonData)})
+				c.JSON(http.StatusBadRequest, gin.H{"error": ae.Error()})
 				c.Abort()
 				return
 			}

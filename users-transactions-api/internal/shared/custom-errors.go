@@ -35,3 +35,9 @@ type EntityNotFoundError struct {
 func (e *EntityNotFoundError) Error() string {
 	return fmt.Sprintf("%s not found with id %v", e.Object, e.Id)
 }
+
+type InactiveAccountError struct{}
+
+func (e *InactiveAccountError) Error() string {
+	return "Card cannot be created to an inactive account"
+}

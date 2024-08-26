@@ -78,7 +78,7 @@ func TestTenantHandler(t *testing.T) {
 		assert.NoError(t, err)
 
 		assert.Equal(t, http.StatusBadRequest, res.Result().StatusCode)
-		assert.Equal(t, fmt.Sprintf("\"tenant not found with id %s\"", tenantId),
+		assert.Equal(t, fmt.Sprintf("tenant not found with id %s", tenantId),
 			responseBody["error"])
 	})
 

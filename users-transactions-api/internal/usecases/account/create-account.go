@@ -2,11 +2,9 @@ package usecases
 
 import (
 	"log/slog"
-	"time"
 
 	"github.com/Lukasveiga/customers-users-transaction/internal/domain"
 	port "github.com/Lukasveiga/customers-users-transaction/internal/ports/repository"
-	"github.com/Lukasveiga/customers-users-transaction/internal/shared"
 )
 
 type CreateAccountUsecase struct {
@@ -19,32 +17,12 @@ func NewCreateAccountUsecase(repo port.AccountRepository) *CreateAccountUsecase 
 	}
 }
 
-func (uc *CreateAccountUsecase) Create(account *domain.Account) (*domain.Account, error) {
-	existAccount, err := uc.repo.FindByNumber(account.TenantId, account.Number)
-
-	if err != nil {
-		slog.Error(
-			"error to find account by id",
-			slog.Int("id", int(account.Id)),
-			slog.String("err", err.Error()),
-		)
-		return nil, err
+func (uc *CreateAccountUsecase) Create(tenantId int32) (*domain.Account, error) {
+	account := &domain.Account{
+		TenantId: tenantId,
 	}
 
-	if existAccount != nil {
-		return nil, &shared.AlreadyExistsError{
-			Object: "account",
-			Id:     account.Number,
-		}
-	}
-
-	err = account.Validate()
-	if err != nil {
-		return nil, err
-	}
-
-	account.CreatedAt = time.Now().UTC()
-	savedAccount, err := uc.repo.Create(account)
+	savedAccount, err := uc.repo.Save(account.Create())
 
 	if err != nil {
 		slog.Error(

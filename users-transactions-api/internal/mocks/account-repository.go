@@ -9,7 +9,7 @@ type MockAccountRepository struct {
 	mock.Mock
 }
 
-func (mock *MockAccountRepository) Create(account *domain.Account) (*domain.Account, error) {
+func (mock *MockAccountRepository) Save(account *domain.Account) (*domain.Account, error) {
 	args := mock.Called()
 	result := args.Get(0)
 
@@ -42,7 +42,7 @@ func (mock *MockAccountRepository) FindById(tenantId int32, id int32) (*domain.A
 	return nil, args.Error(1)
 }
 
-func (mock *MockAccountRepository) FindByNumber(tenantId int32, number string) (*domain.Account, error) {
+func (mock *MockAccountRepository) Update(account *domain.Account) (*domain.Account, error) {
 	args := mock.Called()
 	result := args.Get(0)
 
@@ -51,20 +51,4 @@ func (mock *MockAccountRepository) FindByNumber(tenantId int32, number string) (
 	}
 
 	return nil, args.Error(1)
-}
-
-func (mock *MockAccountRepository) Update(id int32, account *domain.Account) (*domain.Account, error) {
-	args := mock.Called()
-	result := args.Get(0)
-
-	if result != nil {
-		return result.(*domain.Account), args.Error(1)
-	}
-
-	return nil, args.Error(1)
-}
-
-func (mock *MockAccountRepository) Delete(tenantId int32, id int32) error {
-	args := mock.Called()
-	return args.Error(0)
 }

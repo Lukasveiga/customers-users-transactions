@@ -4,7 +4,6 @@ import "time"
 
 type Transaction struct {
 	Id        int32     `json:"id"`
-	TenantId  int32     `json:"tenant_id"`
 	Kind      string    `json:"kind"`
 	Value     float32   `json:"value"`
 	IdCard    int32     `json:"id_card"`

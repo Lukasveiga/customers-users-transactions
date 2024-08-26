@@ -6,7 +6,6 @@ import (
 
 	"github.com/Lukasveiga/customers-users-transaction/internal/domain"
 	"github.com/Lukasveiga/customers-users-transaction/internal/mocks"
-	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -19,7 +18,6 @@ func TestFindAllAccountsUsecase(t *testing.T) {
 		{
 			Id:       1,
 			TenantId: 1,
-			Number:   uuid.New().String(),
 			Status:   "active",
 		},
 	}
