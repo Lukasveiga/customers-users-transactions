@@ -8,32 +8,44 @@ import (
 	"github.com/Lukasveiga/customers-users-transaction/internal/handlers"
 	infra "github.com/Lukasveiga/customers-users-transaction/internal/infra/repository"
 	accountUsecases "github.com/Lukasveiga/customers-users-transaction/internal/usecases/account"
+	cardUsecases "github.com/Lukasveiga/customers-users-transaction/internal/usecases/cards"
 	tenantUsecases "github.com/Lukasveiga/customers-users-transaction/internal/usecases/tenant"
 )
 
 type Handlers struct {
 	AccountHandler *handlers.AccountHandler
 	TenantHandler  *handlers.TenantHandler
+	CardHandler    *handlers.CardHandler
 }
 
 func InitHandlers(dbConnection *sql.DB) *Handlers {
+	// Repositories
 	accountPgRepository := infra.NewPgAccountRepository(dbConnection)
 	tenantPgRepository := infra.NewPgTenantRepository(dbConnection)
+	cardPgRepository := infra.NewPgCardRepository(dbConnection)
 
+	// Account usecases
 	createAccountUsecase := accountUsecases.NewCreateAccountUsecase(accountPgRepository)
 	findOneAccountUsecase := accountUsecases.NewFindOneAccountUsecase(accountPgRepository)
 	findAllAccountsUsecase := accountUsecases.NewFindAllAccountsUsecase(accountPgRepository)
-	updateAccountUsecase := accountUsecases.NewUpdateAccountUsecase(accountPgRepository)
-	deleteAaccountUsecase := accountUsecases.NewDeleteAccountUsecase(accountPgRepository)
+	updateAccountUsecase := accountUsecases.NewActiveAccountUsecase(accountPgRepository)
+	deleteAaccountUsecase := accountUsecases.NewInactiveAccountUsecase(accountPgRepository)
 
+	// Tenant usecases
 	findOneTenantUseCase := tenantUsecases.NewFindOneTenantUseCase(tenantPgRepository)
 
+	// Card usecases
+	createCardUsecase := cardUsecases.NewCreateCardUsecase(cardPgRepository, findOneAccountUsecase)
+
+	// Handlers
 	accountHandler := handlers.NewAccountHandler(createAccountUsecase, findAllAccountsUsecase, findOneAccountUsecase, updateAccountUsecase, deleteAaccountUsecase)
 	tenantHandler := handlers.NewTenantHandler(findOneTenantUseCase)
+	cardHandler := handlers.NewCardHandler(createCardUsecase)
 
 	return &Handlers{
 		AccountHandler: accountHandler,
 		TenantHandler:  tenantHandler,
+		CardHandler:    cardHandler,
 	}
 }
 

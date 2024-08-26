@@ -7,17 +7,17 @@ import (
 	"github.com/Lukasveiga/customers-users-transaction/internal/shared"
 )
 
-type DeleteAccountUsecase struct {
+type InactiveAccountUsecase struct {
 	repo port.AccountRepository
 }
 
-func NewDeleteAccountUsecase(repo port.AccountRepository) *DeleteAccountUsecase {
-	return &DeleteAccountUsecase{
+func NewInactiveAccountUsecase(repo port.AccountRepository) *InactiveAccountUsecase {
+	return &InactiveAccountUsecase{
 		repo: repo,
 	}
 }
 
-func (uc *DeleteAccountUsecase) Delete(tenantId int32, id int32) error {
+func (uc *InactiveAccountUsecase) Inactive(tenantId int32, id int32) error {
 	account, err := uc.repo.FindById(tenantId, id)
 
 	if err != nil {
@@ -35,7 +35,9 @@ func (uc *DeleteAccountUsecase) Delete(tenantId int32, id int32) error {
 		}
 	}
 
-	err = uc.repo.Delete(tenantId, id)
+	account.Inactive()
+
+	_, err = uc.repo.Update(account)
 
 	if err != nil {
 		return err

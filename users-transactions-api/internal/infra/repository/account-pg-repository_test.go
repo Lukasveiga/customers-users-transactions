@@ -7,7 +7,6 @@ import (
 
 	"github.com/Lukasveiga/customers-users-transaction/config"
 	"github.com/Lukasveiga/customers-users-transaction/internal/domain"
-	"github.com/google/uuid"
 	"github.com/lib/pq"
 	"github.com/stretchr/testify/assert"
 )
@@ -26,11 +25,10 @@ func TestPostgreAccountRepository(t *testing.T) {
 	t.Run("[Create] should save new account and return it", func(t *testing.T) {
 		account := &domain.Account{
 			TenantId: 1,
-			Number:   uuid.New().String(),
 			Status:   "active",
 		}
 
-		savedAccount, err := pgAccountRepository.Create(account)
+		savedAccount, err := pgAccountRepository.Save(account)
 
 		assert.NoError(t, err)
 
@@ -46,11 +44,10 @@ func TestPostgreAccountRepository(t *testing.T) {
 		invalidTenantId := int32(15)
 		account := &domain.Account{
 			TenantId: invalidTenantId,
-			Number:   uuid.New().String(),
 			Status:   "active",
 		}
 
-		savedAccount, err := pgAccountRepository.Create(account)
+		savedAccount, err := pgAccountRepository.Save(account)
 
 		assert.Nil(t, savedAccount)
 		assert.NotNil(t, err)
@@ -61,11 +58,10 @@ func TestPostgreAccountRepository(t *testing.T) {
 	t.Run("[FindById] should find account by id and tenant id", func(t *testing.T) {
 		account := &domain.Account{
 			TenantId: 1,
-			Number:   uuid.New().String(),
 			Status:   "active",
 		}
 
-		savedAccount, err := pgAccountRepository.Create(account)
+		savedAccount, err := pgAccountRepository.Save(account)
 
 		assert.NoError(t, err)
 
@@ -80,11 +76,10 @@ func TestPostgreAccountRepository(t *testing.T) {
 	t.Run("[FindById] should return nil when account is not found by id", func(t *testing.T) {
 		account := &domain.Account{
 			TenantId: 1,
-			Number:   uuid.New().String(),
 			Status:   "active",
 		}
 
-		savedAccount, err := pgAccountRepository.Create(account)
+		savedAccount, err := pgAccountRepository.Save(account)
 
 		assert.NoError(t, err)
 
@@ -119,73 +114,13 @@ func TestPostgreAccountRepository(t *testing.T) {
 		}
 	})
 
-	t.Run("[FindByNumber] should return account by number and tenant id", func(t *testing.T) {
-		account := &domain.Account{
-			TenantId: 1,
-			Number:   uuid.New().String(),
-			Status:   "active",
-		}
-
-		savedAccount, err := pgAccountRepository.Create(account)
-
-		assert.NoError(t, err)
-
-		foundAccount, err := pgAccountRepository.FindByNumber(account.TenantId, account.Number)
-
-		assert.NoError(t, err)
-		assert.Equal(t, savedAccount, foundAccount)
-	})
-
-	t.Run("[FindByNumber] should return nil when account is not found by number", func(t *testing.T) {
-		account := &domain.Account{
-			TenantId: 1,
-			Number:   uuid.New().String(),
-			Status:   "active",
-		}
-
-		savedAccount, err := pgAccountRepository.Create(account)
-
-		assert.NoError(t, err)
-
-		testCases := []struct {
-			name     string
-			tenantId int32
-			number   string
-		}{
-			{
-				name:     "invalid tenant id",
-				tenantId: 15,
-				number:   savedAccount.Number,
-			},
-			{
-				name:     "invalid account number",
-				tenantId: 1,
-				number:   "invalid-account-number",
-			},
-		}
-
-		for i := range testCases {
-			tc := testCases[i]
-
-			t.Run(tc.name, func(t *testing.T) {
-				t.Parallel()
-
-				foundAccount, err := pgAccountRepository.FindByNumber(tc.tenantId, tc.number)
-
-				assert.Nil(t, foundAccount)
-				assert.Nil(t, err)
-			})
-		}
-	})
-
 	t.Run("[FindAll] should return a list of account given a tenant id", func(t *testing.T) {
 		account := &domain.Account{
 			TenantId: 2,
-			Number:   uuid.New().String(),
 			Status:   "active",
 		}
 
-		savedAccount, err := pgAccountRepository.Create(account)
+		savedAccount, err := pgAccountRepository.Save(account)
 
 		assert.NoError(t, err)
 
@@ -208,35 +143,34 @@ func TestPostgreAccountRepository(t *testing.T) {
 	t.Run("[Update] should update account", func(t *testing.T) {
 		account := &domain.Account{
 			TenantId: 3,
-			Number:   uuid.New().String(),
 			Status:   "active",
 		}
 
-		savedAccount, err := pgAccountRepository.Create(account)
+		savedAccount, err := pgAccountRepository.Save(account)
 
 		assert.NoError(t, err)
 
 		updateAccount := &domain.Account{
+			Id:       savedAccount.Id,
 			TenantId: 3,
-			Number:   uuid.New().String(),
 			Status:   "inactive",
 		}
 
-		updatedAccount, err := pgAccountRepository.Update(savedAccount.Id, updateAccount)
+		updatedAccount, err := pgAccountRepository.Update(updateAccount)
 
 		assert.NoError(t, err)
-		assert.Equal(t, updateAccount.Number, updatedAccount.Number)
 		assert.Equal(t, updateAccount.Status, updatedAccount.Status)
 	})
 
 	t.Run("[Update] should return error when update account with invalid account id", func(t *testing.T) {
 		account := &domain.Account{
 			TenantId: 3,
-			Number:   uuid.New().String(),
 			Status:   "active",
 		}
 
-		updatedAccount, err := pgAccountRepository.Update(15, account)
+		account.Id = 15
+
+		updatedAccount, err := pgAccountRepository.Update(account)
 
 		assert.Nil(t, updatedAccount)
 		assert.Equal(t, sql.ErrNoRows.Error(), err.Error())
@@ -245,52 +179,21 @@ func TestPostgreAccountRepository(t *testing.T) {
 	t.Run("[Update] should return error when update account with invalid tenant id", func(t *testing.T) {
 		account := &domain.Account{
 			TenantId: 3,
-			Number:   uuid.New().String(),
 			Status:   "active",
 		}
 
-		savedAccount, err := pgAccountRepository.Create(account)
+		_, err := pgAccountRepository.Save(account)
 
 		assert.NoError(t, err)
 
 		updateAccount := &domain.Account{
 			TenantId: 15,
-			Number:   uuid.New().String(),
 			Status:   "inactive",
 		}
 
-		updatedAccount, err := pgAccountRepository.Update(savedAccount.Id, updateAccount)
+		updatedAccount, err := pgAccountRepository.Update(updateAccount)
 
 		assert.Nil(t, updatedAccount)
-		assert.Contains(t, err.(*pq.Error).Detail,
-			fmt.Sprintf("Key (tenant_id)=(%d) is not present in table \"tenants\".", updateAccount.TenantId))
-	})
-
-	t.Run("[Delete] should delete an account by id and tenantId", func(t *testing.T) {
-		account := &domain.Account{
-			TenantId: 4,
-			Number:   uuid.New().String(),
-			Status:   "active",
-		}
-
-		savedAccount, err := pgAccountRepository.Create(account)
-
-		assert.NoError(t, err)
-
-		err = pgAccountRepository.Delete(savedAccount.TenantId, savedAccount.Id)
-
-		assert.NoError(t, err)
-
-		deletedAccount, err := pgAccountRepository.FindById(savedAccount.TenantId, savedAccount.Id)
-
-		assert.NoError(t, err)
-
-		assert.Equal(t, "inactive", deletedAccount.Status)
-	})
-
-	t.Run("[Delete] should return error when delete account with account id", func(t *testing.T) {
-		err := pgAccountRepository.Delete(15, 15)
-
-		assert.Equal(t, sql.ErrNoRows, err)
+		assert.Equal(t, sql.ErrNoRows.Error(), err.Error())
 	})
 }
