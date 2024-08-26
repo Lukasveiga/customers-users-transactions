@@ -1,13 +1,20 @@
 package domain
 
-import "time"
+import (
+	"time"
+)
 
 type Card struct {
 	Id        int32     `json:"id"`
-	TenantId  int32     `json:"tenant_id"`
 	Amount    float32   `json:"amount"`
-	IdAccount int32     `json:"id_account"`
+	AccountId int32     `json:"account_id"`
 	CreatedAt time.Time `json:"created_at"`
 	UpdatedAt time.Time `json:"updated_at"`
 	DeletedAt time.Time `json:"deleted_at"`
+}
+
+func (a *Card) Create() *Card {
+	a.Amount = float32(0)
+	a.CreatedAt = time.Now().UTC()
+	return a
 }
