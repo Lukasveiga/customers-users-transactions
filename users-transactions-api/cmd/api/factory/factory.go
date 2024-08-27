@@ -36,11 +36,12 @@ func InitHandlers(dbConnection *sql.DB) *Handlers {
 
 	// Card usecases
 	createCardUsecase := cardUsecases.NewCreateCardUsecase(cardPgRepository, findOneAccountUsecase)
+	findCardUsecase := cardUsecases.NewFindCardUsecase(cardPgRepository, findOneAccountUsecase)
 
 	// Handlers
 	accountHandler := handlers.NewAccountHandler(createAccountUsecase, findAllAccountsUsecase, findOneAccountUsecase, updateAccountUsecase, deleteAaccountUsecase)
 	tenantHandler := handlers.NewTenantHandler(findOneTenantUseCase)
-	cardHandler := handlers.NewCardHandler(createCardUsecase)
+	cardHandler := handlers.NewCardHandler(createCardUsecase, findCardUsecase)
 
 	return &Handlers{
 		AccountHandler: accountHandler,

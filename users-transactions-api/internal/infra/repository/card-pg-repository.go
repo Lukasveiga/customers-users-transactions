@@ -47,7 +47,7 @@ func (cr *PgCardRepository) FindById(accountId int32, id int32) (*domain.Card, e
 	query := "SELECT * FROM cards WHERE account_id = $1 AND id = $2"
 
 	row := cr.db.QueryRow(query, accountId, id)
-	err := row.Scan(&card.Id, &card.Amount, &card.AccountId, &card.CreatedAt,
+	err := row.Scan(&card.Id, &card.AccountId, &card.Amount, &card.CreatedAt,
 		&card.UpdatedAt, &card.DeletedAt)
 
 	switch {
@@ -87,7 +87,7 @@ func (cr *PgCardRepository) FindAllByAccountId(accountId int32) ([]*domain.Card,
 	for rows.Next() {
 		var card domain.Card
 
-		if err := rows.Scan(&card.Id, &card.Amount, &card.AccountId, &card.CreatedAt,
+		if err := rows.Scan(&card.Id, &card.AccountId, &card.Amount, &card.CreatedAt,
 			&card.UpdatedAt, &card.DeletedAt); err != nil {
 			slog.Error(
 				"postgre card repository",
@@ -111,7 +111,7 @@ func (cr *PgCardRepository) Update(id int32, card *domain.Card) (*domain.Card, e
 	query := "UPDATE cards SET amount = $1, account_id = $2, created_at = $3, updated_at = $4, " +
 		"deleted_at = $5 WHERE id = $6 RETURNING *"
 
-	row := cr.db.QueryRow(query, &card.Amount, &card.AccountId, &card.CreatedAt,
+	row := cr.db.QueryRow(query, &card.AccountId, &card.Amount, &card.CreatedAt,
 		&card.UpdatedAt, &card.DeletedAt, id)
 
 	var updatedCard domain.Card
