@@ -29,6 +29,7 @@ func Routes(handlers *factory.Handlers) *gin.Engine {
 	card := router.Group(baseUrl)
 	{
 		card.POST("/card/:accountId", handlers.CardHandler.Create)
+		card.GET("/card/:cardId/account/:accountId", handlers.CardHandler.FindCard)
 	}
 
 	return router
