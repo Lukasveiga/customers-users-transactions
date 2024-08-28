@@ -41,7 +41,7 @@ func (uc *FindCardUsecase) FindOne(tenantId int32, accountId int32, cardId int32
 
 	if card == nil {
 		return nil, &shared.EntityNotFoundError{
-			Object: "Card",
+			Object: "card",
 			Id:     cardId,
 		}
 	}

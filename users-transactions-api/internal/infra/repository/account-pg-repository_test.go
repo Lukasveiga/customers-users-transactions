@@ -22,7 +22,7 @@ func TestPostgreAccountRepository(t *testing.T) {
 		assert.NotNil(t, &dbClient)
 	})
 
-	t.Run("[Create] should save new account and return it", func(t *testing.T) {
+	t.Run("[Save] should save new account and return it", func(t *testing.T) {
 		account := &domain.Account{
 			TenantId: 1,
 			Status:   "active",
@@ -40,7 +40,7 @@ func TestPostgreAccountRepository(t *testing.T) {
 		assert.Equal(t, account, savedAccount)
 	})
 
-	t.Run("[Create] should return error when tenant id not exists", func(t *testing.T) {
+	t.Run("[Save] should return error when tenant id not exists", func(t *testing.T) {
 		invalidTenantId := int32(15)
 		account := &domain.Account{
 			TenantId: invalidTenantId,
