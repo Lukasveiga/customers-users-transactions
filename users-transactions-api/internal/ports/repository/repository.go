@@ -18,11 +18,11 @@ type CardRepository interface {
 }
 
 type TransactionRepository interface {
-	Create(transaction *domain.Transaction) (*domain.Transaction, error)
-	FindAllByCardId(tenantId int32, cardId int32) ([]domain.Transaction, error)
-	FindById(tenantId int32, id int32) (*domain.Transaction, error)
-	Update(id int32, transaction *domain.Transaction) (*domain.Transaction, error)
-	Delete(id int32) error
+	Save(transaction *domain.Transaction) (*domain.Transaction, error)
+	//FindAllByCardId(tenantId int32, cardId int32) ([]domain.Transaction, error)
+	//FindById(tenantId int32, id int32) (*domain.Transaction, error)
+	//Update(id int32, transaction *domain.Transaction) (*domain.Transaction, error)
+	//Delete(id int32) error
 }
 
 type TenantRepository interface {
