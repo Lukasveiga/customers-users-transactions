@@ -2,6 +2,8 @@ package domain
 
 import (
 	"time"
+
+	"github.com/Lukasveiga/customers-users-transaction/internal/shared"
 )
 
 type Card struct {
@@ -13,8 +15,20 @@ type Card struct {
 	DeletedAt time.Time `json:"deleted_at"`
 }
 
-func (a *Card) Create() *Card {
-	a.Amount = float32(0)
-	a.CreatedAt = time.Now().UTC()
-	return a
+func (c *Card) Create() *Card {
+	c.Amount = float32(0)
+	c.CreatedAt = time.Now().UTC()
+	return c
+}
+
+func (c *Card) AddAmount(value float32) error {
+	if value < 0 {
+		return &shared.ValidationError{
+			Errors: map[string]string{"value": "Amount value must be positive"},
+		}
+	}
+
+	c.UpdatedAt = time.Now().UTC()
+	c.Amount += value
+	return nil
 }

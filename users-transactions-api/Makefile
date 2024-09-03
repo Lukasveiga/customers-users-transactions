@@ -3,14 +3,11 @@ ifneq (,$(wildcard ./.env))
     export
 endif
 
-ifeq (${ENV},dev)
-	DB_HOST=localhost
-endif
-
-.PHONY: test, lint, run
+.PHONY: test, lint, run, sqlc
 
 GOOSE=goose
-DB_URL=postgres://${DB_USERNAME}:${DB_PASSWORD}@${DB_HOST}:${DB_PORT}/${DB_NAME}?sslmode=disable
+DB_HOST=localhost
+DB_URL=postgres://${DB_USERNAME}:${DB_PASSWORD}@$(DB_HOST):${DB_PORT}/${DB_NAME}?sslmode=disable
 
 test:
 	go test -cover -race ./... -v
@@ -20,6 +17,9 @@ lint:
 
 run:
 	go run cmd/api/main.go
+
+sqlc:
+	sqlc generate
 
 migrate-status:
 	$(GOOSE) -dir ./migrations postgres "$(DB_URL)" status
