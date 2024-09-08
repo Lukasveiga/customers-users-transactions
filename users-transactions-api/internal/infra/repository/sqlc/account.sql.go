@@ -12,32 +12,19 @@ import (
 
 const createAccount = `-- name: CreateAccount :one
 INSERT INTO accounts (
-    tenant_id, 
-    status, 
-    created_at, 
-    updated_at, 
-    deleted_at
+    tenant_id, status
 ) VALUES (
-    $1, $2, $3, $4, $5
+    $1, $2
 ) RETURNING id, tenant_id, status, created_at, updated_at, deleted_at
 `
 
 type CreateAccountParams struct {
-	TenantID  sql.NullInt32 `json:"tenant_id"`
-	Status    string        `json:"status"`
-	CreatedAt sql.NullTime  `json:"created_at"`
-	UpdatedAt sql.NullTime  `json:"updated_at"`
-	DeletedAt sql.NullTime  `json:"deleted_at"`
+	TenantID int32  `json:"tenant_id"`
+	Status   string `json:"status"`
 }
 
 func (q *Queries) CreateAccount(ctx context.Context, arg CreateAccountParams) (Account, error) {
-	row := q.db.QueryRowContext(ctx, createAccount,
-		arg.TenantID,
-		arg.Status,
-		arg.CreatedAt,
-		arg.UpdatedAt,
-		arg.DeletedAt,
-	)
+	row := q.db.QueryRowContext(ctx, createAccount, arg.TenantID, arg.Status)
 	var i Account
 	err := row.Scan(
 		&i.ID,
@@ -57,8 +44,8 @@ LIMIT 1
 `
 
 type GetAccountParams struct {
-	TenantID sql.NullInt32 `json:"tenant_id"`
-	ID       int32         `json:"id"`
+	TenantID int32 `json:"tenant_id"`
+	ID       int32 `json:"id"`
 }
 
 func (q *Queries) GetAccount(ctx context.Context, arg GetAccountParams) (Account, error) {
@@ -80,7 +67,7 @@ SELECT id, tenant_id, status, created_at, updated_at, deleted_at FROM accounts
 WHERE tenant_id = $1
 `
 
-func (q *Queries) GetAccounts(ctx context.Context, tenantID sql.NullInt32) ([]Account, error) {
+func (q *Queries) GetAccounts(ctx context.Context, tenantID int32) ([]Account, error) {
 	rows, err := q.db.QueryContext(ctx, getAccounts, tenantID)
 	if err != nil {
 		return nil, err
@@ -112,32 +99,26 @@ func (q *Queries) GetAccounts(ctx context.Context, tenantID sql.NullInt32) ([]Ac
 
 const updateAccount = `-- name: UpdateAccount :one
 UPDATE accounts 
-SET tenant_id = $1, 
-status = $2, 
-created_at = $3, 
-updated_at = $4, 
-deleted_at = $5 
-WHERE id = $6
+SET status = $2, 
+updated_at = $3, 
+deleted_at = $4 
+WHERE id = $1
 RETURNING id, tenant_id, status, created_at, updated_at, deleted_at
 `
 
 type UpdateAccountParams struct {
-	TenantID  sql.NullInt32 `json:"tenant_id"`
-	Status    string        `json:"status"`
-	CreatedAt sql.NullTime  `json:"created_at"`
-	UpdatedAt sql.NullTime  `json:"updated_at"`
-	DeletedAt sql.NullTime  `json:"deleted_at"`
-	ID        int32         `json:"id"`
+	ID        int32        `json:"id"`
+	Status    string       `json:"status"`
+	UpdatedAt sql.NullTime `json:"updated_at"`
+	DeletedAt sql.NullTime `json:"deleted_at"`
 }
 
 func (q *Queries) UpdateAccount(ctx context.Context, arg UpdateAccountParams) (Account, error) {
 	row := q.db.QueryRowContext(ctx, updateAccount,
-		arg.TenantID,
+		arg.ID,
 		arg.Status,
-		arg.CreatedAt,
 		arg.UpdatedAt,
 		arg.DeletedAt,
-		arg.ID,
 	)
 	var i Account
 	err := row.Scan(

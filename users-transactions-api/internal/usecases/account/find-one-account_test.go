@@ -1,10 +1,11 @@
 package usecases
 
 import (
+	"database/sql"
 	"errors"
 	"testing"
 
-	"github.com/Lukasveiga/customers-users-transaction/internal/domain"
+	infra "github.com/Lukasveiga/customers-users-transaction/internal/infra/repository/sqlc"
 	"github.com/Lukasveiga/customers-users-transaction/internal/mocks"
 	"github.com/Lukasveiga/customers-users-transaction/internal/shared"
 	"github.com/stretchr/testify/assert"
@@ -13,11 +14,11 @@ import (
 func TestFindOneAccountUsecase(t *testing.T) {
 	t.Parallel()
 
-	mockRepo := new(mocks.MockAccountRepository)
+	mockRepo := new(mocks.MockRepository)
 	tenantId := int32(1)
-	account := &domain.Account{
-		Id:       1,
-		TenantId: 1,
+	account := infra.Account{
+		ID:       1,
+		TenantID: 1,
 		Status:   "active",
 	}
 
@@ -26,37 +27,37 @@ func TestFindOneAccountUsecase(t *testing.T) {
 	t.Run("Error to find account by id", func(t *testing.T) {
 		expectedErr := errors.New("internal repo error")
 
-		mockRepo.On("FindById").Return(nil, expectedErr)
-		defer mockRepo.On("FindById").Unset()
+		mockRepo.On("GetAccount").Return(nil, expectedErr)
+		defer mockRepo.On("GetAccount").Unset()
 
-		result, err := sut.FindOne(tenantId, account.Id)
+		result, err := sut.FindOne(tenantId, account.ID)
 
-		assert.Nil(t, result)
+		assert.Empty(t, result)
 		assert.Equal(t, expectedErr.Error(), err.Error())
 	})
 
 	t.Run("Error account not found", func(t *testing.T) {
-		mockRepo.On("FindById").Return(nil, nil)
-		defer mockRepo.On("FindById").Unset()
+		mockRepo.On("GetAccount").Return(nil, sql.ErrNoRows)
+		defer mockRepo.On("GetAccount").Unset()
 
-		result, err := sut.FindOne(tenantId, account.Id)
+		result, err := sut.FindOne(tenantId, account.ID)
 
 		expectedErr := &shared.EntityNotFoundError{
 			Object: "account",
-			Id:     account.Id,
+			Id:     account.ID,
 		}
 
-		assert.Nil(t, result)
+		assert.Empty(t, result)
 		assert.Equal(t, expectedErr.Error(), err.Error())
 	})
 
 	t.Run("Success find account by id", func(t *testing.T) {
-		mockRepo.On("FindById").Return(account, nil)
-		defer mockRepo.On("FindById").Unset()
+		mockRepo.On("GetAccount").Return(account, nil)
+		defer mockRepo.On("GetAccount").Unset()
 
-		result, err := sut.FindOne(tenantId, account.Id)
+		result, err := sut.FindOne(tenantId, account.ID)
 
 		assert.Nil(t, err)
-		assert.Equal(t, result, account)
+		assert.Equal(t, *result, account)
 	})
 }

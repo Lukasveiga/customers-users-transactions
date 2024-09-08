@@ -1,20 +1,20 @@
 package usecases
 
 import (
+	"context"
 	"log/slog"
 
-	"github.com/Lukasveiga/customers-users-transaction/internal/domain"
-	port "github.com/Lukasveiga/customers-users-transaction/internal/ports/repository"
+	infra "github.com/Lukasveiga/customers-users-transaction/internal/infra/repository/sqlc"
 	"github.com/Lukasveiga/customers-users-transaction/internal/shared"
 	usecases "github.com/Lukasveiga/customers-users-transaction/internal/usecases/account"
 )
 
 type CreateCardUsecase struct {
-	repo               port.CardRepository
+	repo               infra.Querier
 	findAccountUsecase *usecases.FindOneAccountUsecase
 }
 
-func NewCreateCardUsecase(repo port.CardRepository,
+func NewCreateCardUsecase(repo infra.Querier,
 	findAccountUsecase *usecases.FindOneAccountUsecase) *CreateCardUsecase {
 	return &CreateCardUsecase{
 		repo:               repo,
@@ -22,7 +22,7 @@ func NewCreateCardUsecase(repo port.CardRepository,
 	}
 }
 
-func (uc *CreateCardUsecase) Create(tenantId int32, accountId int32) (*domain.Card, error) {
+func (uc *CreateCardUsecase) Create(tenantId int32, accountId int32) (*infra.Card, error) {
 	account, err := uc.findAccountUsecase.FindOne(tenantId, accountId)
 
 	if err != nil {
@@ -33,11 +33,7 @@ func (uc *CreateCardUsecase) Create(tenantId int32, accountId int32) (*domain.Ca
 		return nil, &shared.InactiveAccountError{}
 	}
 
-	card := &domain.Card{
-		AccountId: accountId,
-	}
-
-	savedCard, err := uc.repo.Save(card.Create())
+	savedCard, err := uc.repo.CreateCard(context.Background(), accountId)
 
 	if err != nil {
 		slog.Error(
@@ -47,5 +43,5 @@ func (uc *CreateCardUsecase) Create(tenantId int32, accountId int32) (*domain.Ca
 		return nil, err
 	}
 
-	return savedCard, nil
+	return &savedCard, nil
 }

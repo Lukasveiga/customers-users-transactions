@@ -4,7 +4,7 @@ import (
 	"errors"
 	"testing"
 
-	"github.com/Lukasveiga/customers-users-transaction/internal/domain"
+	infra "github.com/Lukasveiga/customers-users-transaction/internal/infra/repository/sqlc"
 	"github.com/Lukasveiga/customers-users-transaction/internal/mocks"
 	"github.com/stretchr/testify/assert"
 )
@@ -12,12 +12,12 @@ import (
 func TestFindAllAccountsUsecase(t *testing.T) {
 	t.Parallel()
 
-	mockRepo := new(mocks.MockAccountRepository)
+	mockRepo := new(mocks.MockRepository)
 	tenantId := int32(1)
-	accounts := []*domain.Account{
+	accounts := []infra.Account{
 		{
-			Id:       1,
-			TenantId: 1,
+			ID:       1,
+			TenantID: 1,
 			Status:   "active",
 		},
 	}
@@ -27,8 +27,8 @@ func TestFindAllAccountsUsecase(t *testing.T) {
 	t.Run("Error to find all accounts", func(t *testing.T) {
 		expectedErr := errors.New("internal repo error")
 
-		mockRepo.On("FindAll").Return(nil, expectedErr)
-		defer mockRepo.On("FindAll").Unset()
+		mockRepo.On("GetAccounts").Return(nil, expectedErr)
+		defer mockRepo.On("GetAccounts").Unset()
 
 		result, err := sut.FindAll(tenantId)
 
@@ -37,8 +37,8 @@ func TestFindAllAccountsUsecase(t *testing.T) {
 	})
 
 	t.Run("Success find all accounts", func(t *testing.T) {
-		mockRepo.On("FindAll").Return(accounts, nil)
-		defer mockRepo.On("FindAll").Unset()
+		mockRepo.On("GetAccounts").Return(accounts, nil)
+		defer mockRepo.On("GetAccounts").Unset()
 
 		result, err := sut.FindAll(tenantId)
 

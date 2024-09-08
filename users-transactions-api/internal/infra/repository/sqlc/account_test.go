@@ -2,7 +2,6 @@ package infra
 
 import (
 	"context"
-	"database/sql"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -10,19 +9,16 @@ import (
 
 func createTestAccount(t *testing.T, tenandId int32) Account {
 	arg := CreateAccountParams{
-		TenantID: sql.NullInt32{
-			Int32: tenandId,
-			Valid: true,
-		},
-		Status: "active",
+		TenantID: tenandId,
+		Status:   "active",
 	}
-
 	account, err := testQueries.CreateAccount(context.Background(), arg)
 
 	assert.NoError(t, err)
 	assert.NotEmpty(t, account)
 	assert.Equal(t, arg.TenantID, account.TenantID)
 	assert.Equal(t, arg.Status, account.Status)
+	assert.NotEmpty(t, account.CreatedAt)
 
 	return account
 }
@@ -45,17 +41,14 @@ func TestAccountRepository(t *testing.T) {
 		assert.Equal(t, account, foundAccount)
 	})
 
-	t.Run("[GetAccounts] shoudl return a list of accounts given a tenant id", func(t *testing.T) {
+	t.Run("[GetAccounts] should return a list of accounts given a tenant id", func(t *testing.T) {
 		n := 5
 
 		for i := 0; i < n; i++ {
 			createTestAccount(t, 2)
 		}
 
-		accounts, err := testQueries.GetAccounts(context.Background(), sql.NullInt32{
-			Int32: int32(2),
-			Valid: true,
-		})
+		accounts, err := testQueries.GetAccounts(context.Background(), int32(2))
 
 		assert.NoError(t, err)
 		assert.NotEmpty(t, accounts)
@@ -70,9 +63,8 @@ func TestAccountRepository(t *testing.T) {
 		account := createTestAccount(t, 1)
 
 		updateArgs := UpdateAccountParams{
-			TenantID: account.TenantID,
-			Status:   "inactive",
-			ID:       account.ID,
+			Status: "inactive",
+			ID:     account.ID,
 		}
 
 		updatedAccount, err := testQueries.UpdateAccount(context.Background(), updateArgs)

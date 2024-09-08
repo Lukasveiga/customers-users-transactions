@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"bytes"
+	"database/sql"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -9,7 +10,7 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	"github.com/Lukasveiga/customers-users-transaction/internal/domain"
+	infra "github.com/Lukasveiga/customers-users-transaction/internal/infra/repository/sqlc"
 	"github.com/Lukasveiga/customers-users-transaction/internal/mocks"
 	usecases "github.com/Lukasveiga/customers-users-transaction/internal/usecases/account"
 	"github.com/gin-gonic/gin"
@@ -19,17 +20,18 @@ import (
 func TestAccountHandler(t *testing.T) {
 	t.Parallel()
 
-	mockRepo := new(mocks.MockAccountRepository)
+	mockRepo := new(mocks.MockRepository)
 	accountCreateUsecase := usecases.NewCreateAccountUsecase(mockRepo)
 	findOneAccountUsecase := usecases.NewFindOneAccountUsecase(mockRepo)
 	findAllAccountsUsecase := usecases.NewFindAllAccountsUsecase(mockRepo)
 	updateAccountUsecase := usecases.NewActiveAccountUsecase(mockRepo)
 	deleteAccountUSecase := usecases.NewInactiveAccountUsecase(mockRepo)
+
 	sut := NewAccountHandler(accountCreateUsecase, findAllAccountsUsecase, findOneAccountUsecase, updateAccountUsecase, deleteAccountUSecase)
 
-	account := &domain.Account{
-		Id:       1,
-		TenantId: 1,
+	account := infra.Account{
+		ID:       1,
+		TenantID: 1,
 		Status:   "active",
 	}
 
@@ -53,8 +55,8 @@ func TestAccountHandler(t *testing.T) {
 	})
 
 	t.Run("[Create] Internal server error", func(t *testing.T) {
-		mockRepo.On("Save").Return(nil, errors.New("Internal server error"))
-		defer mockRepo.On("Save").Unset()
+		mockRepo.On("CreateAccount").Return(nil, errors.New("Internal server error"))
+		defer mockRepo.On("CreateAccount").Unset()
 
 		res := httptest.NewRecorder()
 		c, _ := gin.CreateTestContext(res)
@@ -75,8 +77,8 @@ func TestAccountHandler(t *testing.T) {
 	})
 
 	t.Run("[Create] Account created successfully", func(t *testing.T) {
-		mockRepo.On("Save").Return(account, nil)
-		defer mockRepo.On("Save").Unset()
+		mockRepo.On("CreateAccount").Return(account, nil)
+		defer mockRepo.On("CreateAccount").Unset()
 
 		res := httptest.NewRecorder()
 		c, _ := gin.CreateTestContext(res)
@@ -87,13 +89,13 @@ func TestAccountHandler(t *testing.T) {
 
 		sut.Create(c)
 
-		var responseBody domain.Account
+		var responseBody infra.Account
 		err := json.NewDecoder(res.Body).Decode(&responseBody)
 
 		assert.NoError(t, err)
 
 		assert.Equal(t, http.StatusCreated, res.Result().StatusCode)
-		assert.Equal(t, *account, responseBody)
+		assert.Equal(t, account, responseBody)
 	})
 
 	t.Run("[FindOne] Invalid tenant id", func(t *testing.T) {
@@ -139,8 +141,8 @@ func TestAccountHandler(t *testing.T) {
 	})
 
 	t.Run("[FindOne] Account not found by id", func(t *testing.T) {
-		mockRepo.On("FindById").Return(nil, nil)
-		defer mockRepo.On("FindById").Unset()
+		mockRepo.On("GetAccount").Return(nil, sql.ErrNoRows)
+		defer mockRepo.On("GetAccount").Unset()
 
 		accountId := "1"
 
@@ -167,8 +169,8 @@ func TestAccountHandler(t *testing.T) {
 	})
 
 	t.Run("[FindOne] Internal server error", func(t *testing.T) {
-		mockRepo.On("FindById").Return(nil, errors.New("Internal server error"))
-		defer mockRepo.On("FindById").Unset()
+		mockRepo.On("GetAccount").Return(nil, errors.New("Internal server error"))
+		defer mockRepo.On("GetAccount").Unset()
 
 		res := httptest.NewRecorder()
 		c, _ := gin.CreateTestContext(res)
@@ -193,8 +195,8 @@ func TestAccountHandler(t *testing.T) {
 	})
 
 	t.Run("[FindOne] Success", func(t *testing.T) {
-		mockRepo.On("FindById").Return(account, nil)
-		defer mockRepo.On("FindById").Unset()
+		mockRepo.On("GetAccount").Return(account, nil)
+		defer mockRepo.On("GetAccount").Unset()
 
 		res := httptest.NewRecorder()
 		c, _ := gin.CreateTestContext(res)
@@ -209,13 +211,13 @@ func TestAccountHandler(t *testing.T) {
 
 		sut.FindOne(c)
 
-		var responseBody domain.Account
+		var responseBody infra.Account
 		err := json.NewDecoder(res.Body).Decode(&responseBody)
 
 		assert.NoError(t, err)
 
 		assert.Equal(t, http.StatusOK, res.Result().StatusCode)
-		assert.Equal(t, *account, responseBody)
+		assert.Equal(t, account, responseBody)
 	})
 
 	t.Run("[FindAll] Invalid tenant id", func(t *testing.T) {
@@ -238,8 +240,8 @@ func TestAccountHandler(t *testing.T) {
 	})
 
 	t.Run("[FindAll] Internal server error", func(t *testing.T) {
-		mockRepo.On("FindAll").Return(nil, errors.New("Internal server error"))
-		defer mockRepo.On("FindAll").Unset()
+		mockRepo.On("GetAccounts").Return(nil, errors.New("Internal server error"))
+		defer mockRepo.On("GetAccounts").Unset()
 
 		res := httptest.NewRecorder()
 		c, _ := gin.CreateTestContext(res)
@@ -260,10 +262,10 @@ func TestAccountHandler(t *testing.T) {
 	})
 
 	t.Run("[FindAll] Success with empty array", func(t *testing.T) {
-		accounts := make([]*domain.Account, 0)
+		accounts := make([]infra.Account, 0)
 
-		mockRepo.On("FindAll").Return(accounts, nil)
-		defer mockRepo.On("FindAll").Unset()
+		mockRepo.On("GetAccounts").Return(accounts, nil)
+		defer mockRepo.On("GetAccounts").Unset()
 
 		res := httptest.NewRecorder()
 		c, _ := gin.CreateTestContext(res)
@@ -274,7 +276,7 @@ func TestAccountHandler(t *testing.T) {
 
 		sut.FindAll(c)
 
-		var responseBody []*domain.Account
+		var responseBody []infra.Account
 		err := json.NewDecoder(res.Body).Decode(&responseBody)
 
 		assert.NoError(t, err)
@@ -284,11 +286,11 @@ func TestAccountHandler(t *testing.T) {
 	})
 
 	t.Run("[FindAll] Success", func(t *testing.T) {
-		accounts := make([]*domain.Account, 0)
+		accounts := make([]infra.Account, 0)
 		accounts = append(accounts, account)
 
-		mockRepo.On("FindAll").Return(accounts, nil)
-		defer mockRepo.On("FindAll").Unset()
+		mockRepo.On("GetAccounts").Return(accounts, nil)
+		defer mockRepo.On("GetAccounts").Unset()
 
 		res := httptest.NewRecorder()
 		c, _ := gin.CreateTestContext(res)
@@ -299,7 +301,7 @@ func TestAccountHandler(t *testing.T) {
 
 		sut.FindAll(c)
 
-		var responseBody []*domain.Account
+		var responseBody []infra.Account
 		err := json.NewDecoder(res.Body).Decode(&responseBody)
 
 		assert.NoError(t, err)
@@ -352,8 +354,8 @@ func TestAccountHandler(t *testing.T) {
 	})
 
 	t.Run("[Active] Account not found by id", func(t *testing.T) {
-		mockRepo.On("FindById").Return(nil, nil)
-		defer mockRepo.On("FindById").Unset()
+		mockRepo.On("GetAccount").Return(nil, sql.ErrNoRows)
+		defer mockRepo.On("GetAccount").Unset()
 
 		res := httptest.NewRecorder()
 		c, _ := gin.CreateTestContext(res)
@@ -381,8 +383,8 @@ func TestAccountHandler(t *testing.T) {
 	})
 
 	t.Run("[Active] Internal server error", func(t *testing.T) {
-		mockRepo.On("FindById").Return(account, errors.New("Internal server error"))
-		defer mockRepo.On("FindById").Unset()
+		mockRepo.On("GetAccount").Return(account, errors.New("Internal server error"))
+		defer mockRepo.On("GetAccount").Unset()
 
 		res := httptest.NewRecorder()
 		c, _ := gin.CreateTestContext(res)
@@ -406,12 +408,12 @@ func TestAccountHandler(t *testing.T) {
 		assert.Equal(t, "Internal Server Error", responseBody["error"])
 	})
 
-	t.Run("[Update] Account updated successfully", func(t *testing.T) {
-		mockRepo.On("FindById").Return(account, nil)
-		defer mockRepo.On("FindById").Unset()
+	t.Run("[Active] Account updated successfully", func(t *testing.T) {
+		mockRepo.On("GetAccount").Return(account, nil)
+		defer mockRepo.On("GetAccount").Unset()
 
-		mockRepo.On("Update").Return(account, nil)
-		defer mockRepo.On("Update").Unset()
+		mockRepo.On("UpdateAccount").Return(account, nil)
+		defer mockRepo.On("UpdateAccount").Unset()
 
 		res := httptest.NewRecorder()
 		c, _ := gin.CreateTestContext(res)
@@ -426,13 +428,14 @@ func TestAccountHandler(t *testing.T) {
 
 		sut.Active(c)
 
-		var responseBody domain.Account
+		var responseBody map[string]string
 		err := json.NewDecoder(res.Body).Decode(&responseBody)
 
 		assert.NoError(t, err)
 
 		assert.Equal(t, http.StatusOK, res.Result().StatusCode)
-		assert.Equal(t, *account, responseBody)
+		assert.Equal(t, fmt.Sprintf("Account with id %d was actived successfully", account.ID),
+			responseBody["message"])
 	})
 
 	t.Run("[Inactive] Invalid tenant id", func(t *testing.T) {
@@ -478,8 +481,8 @@ func TestAccountHandler(t *testing.T) {
 	})
 
 	t.Run("[Inactive] Account not found by id", func(t *testing.T) {
-		mockRepo.On("FindById").Return(nil, nil)
-		defer mockRepo.On("FindById").Unset()
+		mockRepo.On("GetAccount").Return(nil, sql.ErrNoRows)
+		defer mockRepo.On("GetAccount").Unset()
 
 		res := httptest.NewRecorder()
 		c, _ := gin.CreateTestContext(res)
@@ -507,8 +510,8 @@ func TestAccountHandler(t *testing.T) {
 	})
 
 	t.Run("[Inactive] Internal server error", func(t *testing.T) {
-		mockRepo.On("FindById").Return(nil, errors.New("Internal server error"))
-		defer mockRepo.On("FindById").Unset()
+		mockRepo.On("GetAccount").Return(nil, errors.New("Internal server error"))
+		defer mockRepo.On("GetAccount").Unset()
 
 		res := httptest.NewRecorder()
 		c, _ := gin.CreateTestContext(res)
@@ -533,11 +536,11 @@ func TestAccountHandler(t *testing.T) {
 	})
 
 	t.Run("[Inactive] Account deleted successfully", func(t *testing.T) {
-		mockRepo.On("FindById").Return(account, nil)
-		defer mockRepo.On("FindById").Unset()
+		mockRepo.On("GetAccount").Return(account, nil)
+		defer mockRepo.On("GetAccount").Unset()
 
-		mockRepo.On("Update").Return(account, nil)
-		defer mockRepo.On("Update").Unset()
+		mockRepo.On("UpdateAccount").Return(account, nil)
+		defer mockRepo.On("UpdateAccount").Unset()
 
 		res := httptest.NewRecorder()
 		c, _ := gin.CreateTestContext(res)
@@ -558,7 +561,7 @@ func TestAccountHandler(t *testing.T) {
 		assert.NoError(t, err)
 
 		assert.Equal(t, http.StatusOK, res.Result().StatusCode)
-		assert.Equal(t, fmt.Sprintf("Account with id %d was deleted successfully", account.Id),
+		assert.Equal(t, fmt.Sprintf("Account with id %d was deleted successfully", account.ID),
 			responseBody["message"])
 	})
 }

@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"database/sql"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -8,7 +9,7 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	"github.com/Lukasveiga/customers-users-transaction/internal/domain"
+	infra "github.com/Lukasveiga/customers-users-transaction/internal/infra/repository/sqlc"
 	"github.com/Lukasveiga/customers-users-transaction/internal/mocks"
 	accountUsecases "github.com/Lukasveiga/customers-users-transaction/internal/usecases/account"
 	cardUsecases "github.com/Lukasveiga/customers-users-transaction/internal/usecases/cards"
@@ -19,25 +20,24 @@ import (
 func TestCardHandler(t *testing.T) {
 	t.Parallel()
 
-	mockCardRepo := new(mocks.MockCardRepository)
-	mockAccountRepo := new(mocks.MockAccountRepository)
+	mockRepo := new(mocks.MockRepository)
 
-	findOneAccountUsecase := accountUsecases.NewFindOneAccountUsecase(mockAccountRepo)
-	createCardUsecase := cardUsecases.NewCreateCardUsecase(mockCardRepo, findOneAccountUsecase)
-	findCardUsecase := cardUsecases.NewFindCardUsecase(mockCardRepo, findOneAccountUsecase)
+	findOneAccountUsecase := accountUsecases.NewFindOneAccountUsecase(mockRepo)
+	createCardUsecase := cardUsecases.NewCreateCardUsecase(mockRepo, findOneAccountUsecase)
+	findCardUsecase := cardUsecases.NewFindCardUsecase(mockRepo, findOneAccountUsecase)
 
 	sut := NewCardHandler(createCardUsecase, findCardUsecase)
 
-	account := &domain.Account{
-		Id:       1,
-		TenantId: 1,
+	account := infra.Account{
+		ID:       1,
+		TenantID: 1,
 		Status:   "active",
 	}
 
-	card := &domain.Card{
-		Id:        1,
+	card := infra.Card{
+		ID:        1,
 		Amount:    0,
-		AccountId: 1,
+		AccountID: 1,
 	}
 
 	t.Run("[Create] invalid tenant id", func(t *testing.T) {
@@ -83,8 +83,8 @@ func TestCardHandler(t *testing.T) {
 	})
 
 	t.Run("[Create] Internal server error", func(t *testing.T) {
-		mockAccountRepo.On("FindById").Return(nil, errors.New("Internal server error"))
-		defer mockAccountRepo.On("FindById").Unset()
+		mockRepo.On("GetAccount").Return(nil, errors.New("Internal server error"))
+		defer mockRepo.On("GetAccount").Unset()
 
 		res := httptest.NewRecorder()
 		c, _ := gin.CreateTestContext(res)
@@ -109,8 +109,8 @@ func TestCardHandler(t *testing.T) {
 	})
 
 	t.Run("[Create] Error account not found", func(t *testing.T) {
-		mockAccountRepo.On("FindById").Return(nil, nil)
-		defer mockAccountRepo.On("FindById").Unset()
+		mockRepo.On("GetAccount").Return(nil, sql.ErrNoRows)
+		defer mockRepo.On("GetAccount").Unset()
 
 		accountId := "1"
 
@@ -140,8 +140,8 @@ func TestCardHandler(t *testing.T) {
 	t.Run("[Create] Error account inactive", func(t *testing.T) {
 		account.Status = "inactive"
 
-		mockAccountRepo.On("FindById").Return(account, nil)
-		defer mockAccountRepo.On("FindById").Unset()
+		mockRepo.On("GetAccount").Return(account, nil)
+		defer mockRepo.On("GetAccount").Unset()
 
 		res := httptest.NewRecorder()
 		c, _ := gin.CreateTestContext(res)
@@ -151,7 +151,7 @@ func TestCardHandler(t *testing.T) {
 		c.Request.Header.Set("tenant-id", "1")
 		c.Params = []gin.Param{{
 			Key:   "accountId",
-			Value: fmt.Sprint(account.Id),
+			Value: fmt.Sprint(account.ID),
 		}}
 
 		sut.Create(c)
@@ -169,11 +169,11 @@ func TestCardHandler(t *testing.T) {
 	t.Run("[Create] Card created successfully", func(t *testing.T) {
 		account.Status = "active"
 
-		mockAccountRepo.On("FindById").Return(account, nil)
-		defer mockAccountRepo.On("FindById").Unset()
+		mockRepo.On("GetAccount").Return(account, nil)
+		defer mockRepo.On("GetAccount").Unset()
 
-		mockCardRepo.On("Save").Return(card, nil)
-		defer mockCardRepo.On("Save").Unset()
+		mockRepo.On("CreateCard").Return(card, nil)
+		defer mockRepo.On("CreateCard").Unset()
 
 		res := httptest.NewRecorder()
 		c, _ := gin.CreateTestContext(res)
@@ -183,25 +183,25 @@ func TestCardHandler(t *testing.T) {
 		c.Request.Header.Set("tenant-id", "1")
 		c.Params = []gin.Param{{
 			Key:   "accountId",
-			Value: fmt.Sprint(account.Id),
+			Value: fmt.Sprint(account.ID),
 		}}
 
 		sut.Create(c)
 
-		var responseBody domain.Card
+		var responseBody infra.Card
 		err := json.NewDecoder(res.Body).Decode(&responseBody)
 
 		assert.NoError(t, err)
 
 		assert.Equal(t, http.StatusCreated, res.Result().StatusCode)
-		assert.Equal(t, *card, responseBody)
+		assert.Equal(t, card, responseBody)
 	})
 
 	t.Run("[FindCard] Error invalid card id", func(t *testing.T) {
 		res := httptest.NewRecorder()
 		c, _ := gin.CreateTestContext(res)
 
-		c.Request = httptest.NewRequest("POST", "/card", nil)
+		c.Request = httptest.NewRequest("GET", "/card", nil)
 		c.Request.Header.Set("Content-Type", "application/json")
 		c.Request.Header.Set("tenant-id", "1")
 		c.Params = []gin.Param{{
@@ -224,16 +224,16 @@ func TestCardHandler(t *testing.T) {
 		assert.Equal(t, "Invalid card id", responseBody["error"])
 	})
 
-	t.Run("[Create] Error account not found", func(t *testing.T) {
-		mockAccountRepo.On("FindById").Return(nil, nil)
-		defer mockAccountRepo.On("FindById").Unset()
+	t.Run("[FindCard] Error account not found", func(t *testing.T) {
+		mockRepo.On("GetAccount").Return(nil, sql.ErrNoRows)
+		defer mockRepo.On("GetAccount").Unset()
 
 		accountId := "1"
 
 		res := httptest.NewRecorder()
 		c, _ := gin.CreateTestContext(res)
 
-		c.Request = httptest.NewRequest("POST", "/card", nil)
+		c.Request = httptest.NewRequest("GET", "/card", nil)
 		c.Request.Header.Set("Content-Type", "application/json")
 		c.Request.Header.Set("tenant-id", "1")
 		c.Params = []gin.Param{{
@@ -257,39 +257,38 @@ func TestCardHandler(t *testing.T) {
 			responseBody["error"])
 	})
 
-	t.Run("[Create] Success to find card by id", func(t *testing.T) {
+	t.Run("[FindCard] Success to find card by id", func(t *testing.T) {
 		account.Status = "active"
 
-		mockAccountRepo.On("FindById").Return(account, nil)
-		defer mockAccountRepo.On("FindById").Unset()
+		mockRepo.On("GetAccount").Return(account, nil)
+		defer mockRepo.On("GetAccount").Unset()
 
-		mockCardRepo.On("FindById").Return(card, nil)
-		defer mockCardRepo.On("FindById").Unset()
+		mockRepo.On("GetCard").Return(card, nil)
+		defer mockRepo.On("GetCard").Unset()
 
 		res := httptest.NewRecorder()
 		c, _ := gin.CreateTestContext(res)
 
-		c.Request = httptest.NewRequest("POST", "/card", nil)
+		c.Request = httptest.NewRequest("GET", "/card", nil)
 		c.Request.Header.Set("Content-Type", "application/json")
 		c.Request.Header.Set("tenant-id", "1")
 		c.Params = []gin.Param{{
 			Key:   "accountId",
-			Value: fmt.Sprint(account.Id),
+			Value: fmt.Sprint(account.ID),
 		},
 			{
 				Key:   "cardId",
-				Value: fmt.Sprint(card.Id),
+				Value: fmt.Sprint(card.ID),
 			}}
 
 		sut.FindCard(c)
 
-		var responseBody domain.Card
+		var responseBody infra.Card
 		err := json.NewDecoder(res.Body).Decode(&responseBody)
 
 		assert.NoError(t, err)
 
 		assert.Equal(t, http.StatusOK, res.Result().StatusCode)
-		assert.Equal(t, *card, responseBody)
+		assert.Equal(t, card, responseBody)
 	})
-
 }

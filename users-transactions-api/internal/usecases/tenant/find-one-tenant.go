@@ -1,27 +1,34 @@
 package usecases
 
 import (
+	"context"
+	"database/sql"
 	"log/slog"
 
-	"github.com/Lukasveiga/customers-users-transaction/internal/domain"
-	port "github.com/Lukasveiga/customers-users-transaction/internal/ports/repository"
+	infra "github.com/Lukasveiga/customers-users-transaction/internal/infra/repository/sqlc"
 	"github.com/Lukasveiga/customers-users-transaction/internal/shared"
 )
 
 type FindOneTenantUseCase struct {
-	repo port.TenantRepository
+	repo infra.Querier
 }
 
-func NewFindOneTenantUseCase(repo port.TenantRepository) *FindOneTenantUseCase {
+func NewFindOneTenantUseCase(repo infra.Querier) *FindOneTenantUseCase {
 	return &FindOneTenantUseCase{
 		repo: repo,
 	}
 }
 
-func (uc *FindOneTenantUseCase) FindOne(tenantId int32) (*domain.Tenant, error) {
-	tenant, err := uc.repo.FindById(tenantId)
+func (uc *FindOneTenantUseCase) FindOne(tenantId int32) (*infra.Tenant, error) {
+	tenant, err := uc.repo.GetTenant(context.Background(), tenantId)
 
 	if err != nil {
+		if err == sql.ErrNoRows {
+			return nil, &shared.EntityNotFoundError{
+				Object: "tenant",
+				Id:     tenantId,
+			}
+		}
 		slog.Error(
 			"error to find tenant by id",
 			slog.String("err", err.Error()),
@@ -29,12 +36,5 @@ func (uc *FindOneTenantUseCase) FindOne(tenantId int32) (*domain.Tenant, error) 
 		return nil, err
 	}
 
-	if tenant == nil {
-		return nil, &shared.EntityNotFoundError{
-			Object: "tenant",
-			Id:     tenantId,
-		}
-	}
-
-	return tenant, nil
+	return &tenant, nil
 }

@@ -1,26 +1,39 @@
 package usecases
 
 import (
+	"context"
+	"database/sql"
 	"log/slog"
+	"time"
 
-	port "github.com/Lukasveiga/customers-users-transaction/internal/ports/repository"
+	infra "github.com/Lukasveiga/customers-users-transaction/internal/infra/repository/sqlc"
 	"github.com/Lukasveiga/customers-users-transaction/internal/shared"
 )
 
 type InactiveAccountUsecase struct {
-	repo port.AccountRepository
+	repo infra.Querier
 }
 
-func NewInactiveAccountUsecase(repo port.AccountRepository) *InactiveAccountUsecase {
+func NewInactiveAccountUsecase(repo infra.Querier) *InactiveAccountUsecase {
 	return &InactiveAccountUsecase{
 		repo: repo,
 	}
 }
 
 func (uc *InactiveAccountUsecase) Inactive(tenantId int32, id int32) error {
-	account, err := uc.repo.FindById(tenantId, id)
+	ctx := context.Background()
+	account, err := uc.repo.GetAccount(ctx, infra.GetAccountParams{
+		TenantID: tenantId,
+		ID:       id,
+	})
 
 	if err != nil {
+		if err == sql.ErrNoRows {
+			return &shared.EntityNotFoundError{
+				Object: "account",
+				Id:     id,
+			}
+		}
 		slog.Error(
 			"error to find account by id",
 			slog.String("err", err.Error()),
@@ -28,16 +41,17 @@ func (uc *InactiveAccountUsecase) Inactive(tenantId int32, id int32) error {
 		return err
 	}
 
-	if account == nil {
-		return &shared.EntityNotFoundError{
-			Object: "account",
-			Id:     id,
-		}
+	currentTime := sql.NullTime{
+		Time:  time.Now().UTC(),
+		Valid: true,
 	}
 
-	account.Inactive()
-
-	_, err = uc.repo.Update(account)
+	_, err = uc.repo.UpdateAccount(ctx, infra.UpdateAccountParams{
+		ID:        account.ID,
+		Status:    "inactive",
+		UpdatedAt: currentTime,
+		DeletedAt: currentTime,
+	})
 
 	if err != nil {
 		return err

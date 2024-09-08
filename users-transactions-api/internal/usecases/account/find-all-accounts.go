@@ -1,26 +1,26 @@
 package usecases
 
 import (
+	"context"
 	"log/slog"
 
-	"github.com/Lukasveiga/customers-users-transaction/internal/domain"
-	port "github.com/Lukasveiga/customers-users-transaction/internal/ports/repository"
+	infra "github.com/Lukasveiga/customers-users-transaction/internal/infra/repository/sqlc"
 )
 
 type FindAllUsecase struct {
-	repo port.AccountRepository
+	repo infra.Querier
 }
 
-func NewFindAllAccountsUsecase(repo port.AccountRepository) *FindAllUsecase {
+func NewFindAllAccountsUsecase(repo infra.Querier) *FindAllUsecase {
 	return &FindAllUsecase{
 		repo: repo,
 	}
 }
 
-func (uc *FindAllUsecase) FindAll(tenantId int32) ([]*domain.Account, error) {
-	accounts := make([]*domain.Account, 0)
+func (uc *FindAllUsecase) FindAll(tenantId int32) ([]infra.Account, error) {
+	accounts := make([]infra.Account, 0)
 
-	result, err := uc.repo.FindAll(tenantId)
+	result, err := uc.repo.GetAccounts(context.Background(), tenantId)
 
 	if err != nil {
 		slog.Error(

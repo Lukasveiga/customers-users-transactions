@@ -1,17 +1,19 @@
 package usecases
 
 import (
-	"github.com/Lukasveiga/customers-users-transaction/internal/domain"
-	port "github.com/Lukasveiga/customers-users-transaction/internal/ports/repository"
+	"context"
+
+	infra "github.com/Lukasveiga/customers-users-transaction/internal/infra/repository/sqlc"
+	"github.com/Lukasveiga/customers-users-transaction/internal/shared"
 	usecases "github.com/Lukasveiga/customers-users-transaction/internal/usecases/cards"
 )
 
 type CreateTransactionUsecase struct {
-	repo            port.TransactionRepository
+	repo            infra.QuerierTx
 	findCardUsecase *usecases.FindCardUsecase
 }
 
-func NewCreateTransactionUsecase(repo port.TransactionRepository,
+func NewCreateTransactionUsecase(repo infra.QuerierTx,
 	findCardUsecase *usecases.FindCardUsecase) *CreateTransactionUsecase {
 	return &CreateTransactionUsecase{
 		repo:            repo,
@@ -20,27 +22,48 @@ func NewCreateTransactionUsecase(repo port.TransactionRepository,
 }
 
 func (uc *CreateTransactionUsecase) Create(tenantId int32, accountId int32,
-	transaction *domain.Transaction) (*domain.Transaction, error) {
-	card, err := uc.findCardUsecase.FindOne(tenantId, accountId, transaction.CardId)
+	transaction infra.Transaction) (*infra.Transaction, error) {
+	card, err := uc.findCardUsecase.FindOne(tenantId, accountId, transaction.CardID)
 
 	if err != nil {
 		return nil, err
 	}
 
-	validTransaction, err := transaction.Create()
+	err = transactionInputValidation(transaction)
 
 	if err != nil {
 		return nil, err
 	}
 
-	err = card.AddAmount(validTransaction.Value)
+	savedTransaction, err := uc.repo.CreateTransactionTx(context.Background(), infra.CreateTransactionParams{
+		CardID: card.ID,
+		Kind:   transaction.Kind,
+		Value:  transaction.Value,
+	})
 
 	if err != nil {
 		return nil, err
 	}
 
-	// update card
-	// save transaction
+	return &savedTransaction, nil
+}
 
-	return nil, nil
+func transactionInputValidation(t infra.Transaction) error {
+	valErr := &shared.ValidationError{
+		Errors: make(map[string]string),
+	}
+
+	if len(t.Kind) == 0 {
+		valErr.AddError("kind", "cannot be empty")
+	}
+
+	if t.Value < 0 {
+		valErr.AddError("value", "must be greater than zero (0)")
+	}
+
+	if valErr.HasErrors() {
+		return valErr
+	}
+
+	return nil
 }
