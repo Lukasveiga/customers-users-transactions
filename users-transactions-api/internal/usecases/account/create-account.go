@@ -1,28 +1,27 @@
 package usecases
 
 import (
+	"context"
 	"log/slog"
 
-	"github.com/Lukasveiga/customers-users-transaction/internal/domain"
-	port "github.com/Lukasveiga/customers-users-transaction/internal/ports/repository"
+	infra "github.com/Lukasveiga/customers-users-transaction/internal/infra/repository/sqlc"
 )
 
 type CreateAccountUsecase struct {
-	repo port.AccountRepository
+	repo infra.Querier
 }
 
-func NewCreateAccountUsecase(repo port.AccountRepository) *CreateAccountUsecase {
+func NewCreateAccountUsecase(repo infra.Querier) *CreateAccountUsecase {
 	return &CreateAccountUsecase{
 		repo: repo,
 	}
 }
 
-func (uc *CreateAccountUsecase) Create(tenantId int32) (*domain.Account, error) {
-	account := &domain.Account{
-		TenantId: tenantId,
-	}
-
-	savedAccount, err := uc.repo.Save(account.Create())
+func (uc *CreateAccountUsecase) Create(tenantId int32) (*infra.Account, error) {
+	savedAccount, err := uc.repo.CreateAccount(context.Background(), infra.CreateAccountParams{
+		TenantID: tenantId,
+		Status:   "active",
+	})
 
 	if err != nil {
 		slog.Error(
@@ -32,5 +31,5 @@ func (uc *CreateAccountUsecase) Create(tenantId int32) (*domain.Account, error) 
 		return nil, err
 	}
 
-	return savedAccount, nil
+	return &savedAccount, nil
 }

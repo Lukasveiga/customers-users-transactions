@@ -5,18 +5,28 @@ CREATE TABLE tenants (
 
 CREATE TABLE accounts (
     id SERIAL PRIMARY KEY,
-    tenant_id INT REFERENCES tenants(id) ON DELETE CASCADE,
-    status VARCHAR(50) NOT NULL,
-    created_at TIMESTAMP,
-    updated_at TIMESTAMP,
-    deleted_at TIMESTAMP
+    tenant_id INT REFERENCES tenants(id) ON DELETE CASCADE NOT NULL,
+    status VARCHAR(50) NOT NULL DEFAULT 'active',
+    created_at timestamptz NOT NULL DEFAULT 'now()',
+    updated_at timestamptz,
+    deleted_at timestamptz
 );
 
 CREATE TABLE cards (
     id SERIAL PRIMARY KEY,
-    account_id INT REFERENCES accounts(id) ON DELETE CASCADE,
-    amount NUMERIC,
-    created_at TIMESTAMP,
-    updated_at TIMESTAMP,
-    deleted_at TIMESTAMP
+    account_id INT REFERENCES accounts(id) ON DELETE CASCADE NOT NULL,
+    amount BIGINT DEFAULT 0 NOT NULL,
+    created_at timestamptz NOT NULL DEFAULT 'now()',
+    updated_at timestamptz,
+    deleted_at timestamptz
+);
+
+CREATE TABLE transactions (
+    id SERIAL PRIMARY KEY,
+    card_id INT REFERENCES cards(id) ON DELETE CASCADE NOT NULL,
+    kind VARCHAR(145) NOT NULL,
+    value BIGINT NOT NULL,
+    created_at timestamptz NOT NULL DEFAULT 'now()',
+    updated_at timestamptz,
+    deleted_at timestamptz
 );

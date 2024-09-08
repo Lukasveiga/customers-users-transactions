@@ -1,12 +1,8 @@
 -- name: CreateAccount :one
 INSERT INTO accounts (
-    tenant_id, 
-    status, 
-    created_at, 
-    updated_at, 
-    deleted_at
+    tenant_id, status
 ) VALUES (
-    $1, $2, $3, $4, $5
+    $1, $2
 ) RETURNING *;
 
 -- name: GetAccount :one
@@ -20,10 +16,8 @@ WHERE tenant_id = $1;
 
 -- name: UpdateAccount :one
 UPDATE accounts 
-SET tenant_id = $1, 
-status = $2, 
-created_at = $3, 
-updated_at = $4, 
-deleted_at = $5 
-WHERE id = $6
+SET status = $2, 
+updated_at = $3, 
+deleted_at = $4 
+WHERE id = $1
 RETURNING *;

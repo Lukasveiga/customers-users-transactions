@@ -4,7 +4,7 @@ import (
 	"errors"
 	"testing"
 
-	"github.com/Lukasveiga/customers-users-transaction/internal/domain"
+	infra "github.com/Lukasveiga/customers-users-transaction/internal/infra/repository/sqlc"
 	"github.com/Lukasveiga/customers-users-transaction/internal/mocks"
 	"github.com/stretchr/testify/assert"
 )
@@ -12,10 +12,10 @@ import (
 func TestCreateAccountUsecase(t *testing.T) {
 	t.Parallel()
 
-	mockRepo := new(mocks.MockAccountRepository)
-	account := &domain.Account{
-		Id:       1,
-		TenantId: 1,
+	mockRepo := new(mocks.MockRepository)
+	account := infra.Account{
+		ID:       1,
+		TenantID: 1,
 		Status:   "active",
 	}
 
@@ -24,8 +24,8 @@ func TestCreateAccountUsecase(t *testing.T) {
 	t.Run("Error to create account", func(t *testing.T) {
 		expectedErr := errors.New("internal repo error")
 
-		mockRepo.On("Save").Return(nil, expectedErr)
-		defer mockRepo.On("Save").Unset()
+		mockRepo.On("CreateAccount").Return(nil, expectedErr)
+		defer mockRepo.On("CreateAccount").Unset()
 
 		result, err := sut.Create(1)
 
@@ -34,12 +34,12 @@ func TestCreateAccountUsecase(t *testing.T) {
 	})
 
 	t.Run("Success create new account", func(t *testing.T) {
-		mockRepo.On("Save").Return(account, nil)
-		defer mockRepo.On("Save").Unset()
+		mockRepo.On("CreateAccount").Return(account, nil)
+		defer mockRepo.On("CreateAccount").Unset()
 
 		result, err := sut.Create(1)
 
 		assert.Nil(t, err)
-		assert.Equal(t, account, result)
+		assert.Equal(t, account, *result)
 	})
 }

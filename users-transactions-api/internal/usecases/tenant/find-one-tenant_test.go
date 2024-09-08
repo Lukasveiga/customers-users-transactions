@@ -1,10 +1,11 @@
 package usecases
 
 import (
+	"database/sql"
 	"errors"
 	"testing"
 
-	"github.com/Lukasveiga/customers-users-transaction/internal/domain"
+	infra "github.com/Lukasveiga/customers-users-transaction/internal/infra/repository/sqlc"
 	"github.com/Lukasveiga/customers-users-transaction/internal/mocks"
 	"github.com/Lukasveiga/customers-users-transaction/internal/shared"
 	"github.com/stretchr/testify/assert"
@@ -13,25 +14,25 @@ import (
 func TestFindOneTenantUseCase(t *testing.T) {
 	t.Parallel()
 
-	mockRepo := new(mocks.MockTenantRepository)
+	mockRepo := new(mocks.MockRepository)
 
 	sut := NewFindOneTenantUseCase(mockRepo)
 
 	t.Run("Error to find tenant by id", func(t *testing.T) {
 		expectedErr := errors.New("internal repo error")
 
-		mockRepo.On("FindById").Return(nil, expectedErr)
-		defer mockRepo.On("FindById").Unset()
+		mockRepo.On("GetTenant").Return(nil, expectedErr)
+		defer mockRepo.On("GetTenant").Unset()
 
 		result, err := sut.FindOne(1)
 
-		assert.Nil(t, result)
+		assert.Empty(t, result)
 		assert.Equal(t, expectedErr.Error(), err.Error())
 	})
 
 	t.Run("Error tenant not found", func(t *testing.T) {
-		mockRepo.On("FindById").Return(nil, nil)
-		defer mockRepo.On("FindById").Unset()
+		mockRepo.On("GetTenant").Return(nil, sql.ErrNoRows)
+		defer mockRepo.On("GetTenant").Unset()
 
 		result, err := sut.FindOne(1)
 
@@ -40,22 +41,22 @@ func TestFindOneTenantUseCase(t *testing.T) {
 			Id:     1,
 		}
 
-		assert.Nil(t, result)
+		assert.Empty(t, result)
 		assert.Equal(t, expectedErr.Error(), err.Error())
 	})
 
 	t.Run("Success to find tenant by id", func(t *testing.T) {
-		tenant := &domain.Tenant{
-			Id:   int32(1),
+		tenant := infra.Tenant{
+			ID:   int32(1),
 			Name: "Tenant A",
 		}
 
-		mockRepo.On("FindById").Return(tenant, nil)
-		defer mockRepo.On("FindById").Unset()
+		mockRepo.On("GetTenant").Return(tenant, nil)
+		defer mockRepo.On("GetTenant").Unset()
 
-		result, err := sut.FindOne(tenant.Id)
+		result, err := sut.FindOne(tenant.ID)
 
 		assert.NoError(t, err)
-		assert.Equal(t, result, tenant)
+		assert.Equal(t, *result, tenant)
 	})
 }

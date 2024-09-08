@@ -1,27 +1,37 @@
 package usecases
 
 import (
+	"context"
+	"database/sql"
 	"log/slog"
 
-	"github.com/Lukasveiga/customers-users-transaction/internal/domain"
-	port "github.com/Lukasveiga/customers-users-transaction/internal/ports/repository"
+	infra "github.com/Lukasveiga/customers-users-transaction/internal/infra/repository/sqlc"
 	"github.com/Lukasveiga/customers-users-transaction/internal/shared"
 )
 
 type FindOneAccountUsecase struct {
-	repo port.AccountRepository
+	repo infra.Querier
 }
 
-func NewFindOneAccountUsecase(repo port.AccountRepository) *FindOneAccountUsecase {
+func NewFindOneAccountUsecase(repo infra.Querier) *FindOneAccountUsecase {
 	return &FindOneAccountUsecase{
 		repo: repo,
 	}
 }
 
-func (uc *FindOneAccountUsecase) FindOne(tenantId int32, accountId int32) (*domain.Account, error) {
-	account, err := uc.repo.FindById(tenantId, accountId)
+func (uc *FindOneAccountUsecase) FindOne(tenantId int32, accountId int32) (*infra.Account, error) {
+	account, err := uc.repo.GetAccount(context.Background(), infra.GetAccountParams{
+		TenantID: tenantId,
+		ID:       accountId,
+	})
 
 	if err != nil {
+		if err == sql.ErrNoRows {
+			return nil, &shared.EntityNotFoundError{
+				Object: "account",
+				Id:     accountId,
+			}
+		}
 		slog.Error(
 			"error to find account by id",
 			slog.String("err", err.Error()),
@@ -29,12 +39,5 @@ func (uc *FindOneAccountUsecase) FindOne(tenantId int32, accountId int32) (*doma
 		return nil, err
 	}
 
-	if account == nil {
-		return nil, &shared.EntityNotFoundError{
-			Object: "account",
-			Id:     accountId,
-		}
-	}
-
-	return account, nil
+	return &account, nil
 }

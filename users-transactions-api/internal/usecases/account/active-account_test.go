@@ -1,10 +1,11 @@
 package usecases
 
 import (
+	"database/sql"
 	"errors"
 	"testing"
 
-	"github.com/Lukasveiga/customers-users-transaction/internal/domain"
+	infra "github.com/Lukasveiga/customers-users-transaction/internal/infra/repository/sqlc"
 	"github.com/Lukasveiga/customers-users-transaction/internal/mocks"
 	"github.com/Lukasveiga/customers-users-transaction/internal/shared"
 	"github.com/stretchr/testify/assert"
@@ -13,10 +14,10 @@ import (
 func TestUpdateAccountUsecase(t *testing.T) {
 	t.Parallel()
 
-	mockRepo := new(mocks.MockAccountRepository)
-	account := &domain.Account{
-		Id:       1,
-		TenantId: 1,
+	mockRepo := new(mocks.MockRepository)
+	account := infra.Account{
+		ID:       1,
+		TenantID: 1,
 		Status:   "active",
 	}
 
@@ -25,55 +26,51 @@ func TestUpdateAccountUsecase(t *testing.T) {
 	t.Run("Error to find account by Id", func(t *testing.T) {
 		expectedErr := errors.New("internal repo error")
 
-		mockRepo.On("FindById").Return(nil, expectedErr)
-		defer mockRepo.On("FindById").Unset()
+		mockRepo.On("GetAccount").Return(nil, expectedErr)
+		defer mockRepo.On("GetAccount").Unset()
 
-		result, err := sut.Active(account.TenantId, account.Id)
+		err := sut.Active(account.TenantID, account.ID)
 
-		assert.Nil(t, result)
 		assert.Equal(t, expectedErr.Error(), err.Error())
 	})
 
 	t.Run("Error account not found by id", func(t *testing.T) {
-		mockRepo.On("FindById").Return(nil, nil)
-		defer mockRepo.On("FindById").Unset()
+		mockRepo.On("GetAccount").Return(nil, sql.ErrNoRows)
+		defer mockRepo.On("GetAccount").Unset()
 
 		expectedErr := &shared.EntityNotFoundError{
 			Object: "account",
-			Id:     account.Id,
+			Id:     account.ID,
 		}
 
-		result, err := sut.Active(account.TenantId, account.Id)
+		err := sut.Active(account.TenantID, account.ID)
 
-		assert.Nil(t, result)
 		assert.Equal(t, expectedErr.Error(), err.Error())
 	})
 
 	t.Run("Error to active an account", func(t *testing.T) {
 		expectedErr := errors.New("internal repo error")
 
-		mockRepo.On("FindById").Return(account, nil)
-		defer mockRepo.On("FindById").Unset()
+		mockRepo.On("GetAccount").Return(account, nil)
+		defer mockRepo.On("GetAccount").Unset()
 
-		mockRepo.On("Update").Return(nil, expectedErr)
-		defer mockRepo.On("Update").Unset()
+		mockRepo.On("UpdateAccount").Return(nil, expectedErr)
+		defer mockRepo.On("UpdateAccount").Unset()
 
-		result, err := sut.Active(account.TenantId, account.Id)
+		err := sut.Active(account.TenantID, account.ID)
 
-		assert.Nil(t, result)
 		assert.Equal(t, expectedErr.Error(), err.Error())
 	})
 
 	t.Run("Success to active an account", func(t *testing.T) {
-		mockRepo.On("FindById").Return(account, nil)
-		defer mockRepo.On("FindById").Unset()
+		mockRepo.On("GetAccount").Return(account, nil)
+		defer mockRepo.On("GetAccount").Unset()
 
-		mockRepo.On("Update").Return(account, nil)
-		defer mockRepo.On("Update").Unset()
+		mockRepo.On("UpdateAccount").Return(account, nil)
+		defer mockRepo.On("UpdateAccount").Unset()
 
-		result, err := sut.Active(account.TenantId, account.Id)
+		err := sut.Active(account.TenantID, account.ID)
 
-		assert.Nil(t, err)
-		assert.Equal(t, account, result)
+		assert.NoError(t, err)
 	})
 }

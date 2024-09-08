@@ -6,7 +6,7 @@ import (
 
 	"github.com/Lukasveiga/customers-users-transaction/config"
 	"github.com/Lukasveiga/customers-users-transaction/internal/handlers"
-	infra "github.com/Lukasveiga/customers-users-transaction/internal/infra/repository"
+	infra "github.com/Lukasveiga/customers-users-transaction/internal/infra/repository/sqlc"
 	accountUsecases "github.com/Lukasveiga/customers-users-transaction/internal/usecases/account"
 	cardUsecases "github.com/Lukasveiga/customers-users-transaction/internal/usecases/cards"
 	tenantUsecases "github.com/Lukasveiga/customers-users-transaction/internal/usecases/tenant"
@@ -19,24 +19,22 @@ type Handlers struct {
 }
 
 func InitHandlers(dbConnection *sql.DB) *Handlers {
-	// Repositories
-	accountPgRepository := infra.NewPgAccountRepository(dbConnection)
-	tenantPgRepository := infra.NewPgTenantRepository(dbConnection)
-	cardPgRepository := infra.NewPgCardRepository(dbConnection)
+	// Repository
+	repository := infra.NewTx(dbConnection)
 
 	// Account usecases
-	createAccountUsecase := accountUsecases.NewCreateAccountUsecase(accountPgRepository)
-	findOneAccountUsecase := accountUsecases.NewFindOneAccountUsecase(accountPgRepository)
-	findAllAccountsUsecase := accountUsecases.NewFindAllAccountsUsecase(accountPgRepository)
-	updateAccountUsecase := accountUsecases.NewActiveAccountUsecase(accountPgRepository)
-	deleteAaccountUsecase := accountUsecases.NewInactiveAccountUsecase(accountPgRepository)
+	createAccountUsecase := accountUsecases.NewCreateAccountUsecase(repository)
+	findOneAccountUsecase := accountUsecases.NewFindOneAccountUsecase(repository)
+	findAllAccountsUsecase := accountUsecases.NewFindAllAccountsUsecase(repository)
+	updateAccountUsecase := accountUsecases.NewActiveAccountUsecase(repository)
+	deleteAaccountUsecase := accountUsecases.NewInactiveAccountUsecase(repository)
 
 	// Tenant usecases
-	findOneTenantUseCase := tenantUsecases.NewFindOneTenantUseCase(tenantPgRepository)
+	findOneTenantUseCase := tenantUsecases.NewFindOneTenantUseCase(repository)
 
 	// Card usecases
-	createCardUsecase := cardUsecases.NewCreateCardUsecase(cardPgRepository, findOneAccountUsecase)
-	findCardUsecase := cardUsecases.NewFindCardUsecase(cardPgRepository, findOneAccountUsecase)
+	createCardUsecase := cardUsecases.NewCreateCardUsecase(repository, findOneAccountUsecase)
+	findCardUsecase := cardUsecases.NewFindCardUsecase(repository, findOneAccountUsecase)
 
 	// Handlers
 	accountHandler := handlers.NewAccountHandler(createAccountUsecase, findAllAccountsUsecase, findOneAccountUsecase, updateAccountUsecase, deleteAaccountUsecase)

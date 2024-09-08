@@ -106,7 +106,7 @@ func (ah *AccountHandler) Active(c *gin.Context) {
 		return
 	}
 
-	updatedAccount, err := ah.activeAccountUsecase.Active(tenantId, int32(accountId))
+	err = ah.activeAccountUsecase.Active(tenantId, int32(accountId))
 
 	if err != nil {
 		if enf, ok := err.(*shared.EntityNotFoundError); ok {
@@ -118,7 +118,7 @@ func (ah *AccountHandler) Active(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusOK, updatedAccount)
+	c.JSON(http.StatusOK, gin.H{"message": fmt.Sprintf("Account with id %d was actived successfully", accountId)})
 }
 
 func (ah *AccountHandler) Inactive(c *gin.Context) {

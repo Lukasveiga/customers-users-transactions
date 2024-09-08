@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"database/sql"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -9,7 +10,7 @@ import (
 	"strconv"
 	"testing"
 
-	"github.com/Lukasveiga/customers-users-transaction/internal/domain"
+	infra "github.com/Lukasveiga/customers-users-transaction/internal/infra/repository/sqlc"
 	"github.com/Lukasveiga/customers-users-transaction/internal/mocks"
 	usecases "github.com/Lukasveiga/customers-users-transaction/internal/usecases/tenant"
 	"github.com/gin-gonic/gin"
@@ -19,12 +20,12 @@ import (
 func TestTenantHandler(t *testing.T) {
 	t.Parallel()
 
-	mockRepo := new(mocks.MockTenantRepository)
+	mockRepo := new(mocks.MockRepository)
 	findOneTenantUsecase := usecases.NewFindOneTenantUseCase(mockRepo)
 	sut := NewTenantHandler(findOneTenantUsecase)
 
-	tenant := &domain.Tenant{
-		Id:   int32(1),
+	tenant := infra.Tenant{
+		ID:   1,
 		Name: "Tenant A",
 	}
 
@@ -53,8 +54,8 @@ func TestTenantHandler(t *testing.T) {
 	})
 
 	t.Run("[FindTenant] Tenant not found", func(t *testing.T) {
-		mockRepo.On("FindById").Return(nil, nil)
-		defer mockRepo.On("FindById").Unset()
+		mockRepo.On("GetTenant").Return(nil, sql.ErrNoRows)
+		defer mockRepo.On("GetTenant").Unset()
 
 		tenantId := "1"
 
@@ -85,8 +86,8 @@ func TestTenantHandler(t *testing.T) {
 	t.Run("[FindTenant] Internal Server Error", func(t *testing.T) {
 		internalErro := errors.New("internal server error")
 
-		mockRepo.On("FindById").Return(nil, internalErro)
-		defer mockRepo.On("FindById").Unset()
+		mockRepo.On("GetTenant").Return(nil, internalErro)
+		defer mockRepo.On("GetTenant").Unset()
 
 		tenantId := "1"
 
@@ -114,10 +115,10 @@ func TestTenantHandler(t *testing.T) {
 	})
 
 	t.Run("[FindTenant] Success", func(t *testing.T) {
-		mockRepo.On("FindById").Return(tenant, nil)
-		defer mockRepo.On("FindById").Unset()
+		mockRepo.On("GetTenant").Return(tenant, nil)
+		defer mockRepo.On("GetTenant").Unset()
 
-		tenantId := strconv.Itoa(int(tenant.Id))
+		tenantId := strconv.Itoa(int(tenant.ID))
 
 		res := httptest.NewRecorder()
 		c, _ := gin.CreateTestContext(res)

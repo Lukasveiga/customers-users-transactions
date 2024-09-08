@@ -1,11 +1,12 @@
 package usecases
 
 import (
+	"database/sql"
 	"errors"
 	"fmt"
 	"testing"
 
-	"github.com/Lukasveiga/customers-users-transaction/internal/domain"
+	infra "github.com/Lukasveiga/customers-users-transaction/internal/infra/repository/sqlc"
 	"github.com/Lukasveiga/customers-users-transaction/internal/mocks"
 	usecases "github.com/Lukasveiga/customers-users-transaction/internal/usecases/account"
 	"github.com/stretchr/testify/assert"
@@ -14,73 +15,72 @@ import (
 func TestFindCardUsecase(t *testing.T) {
 	t.Parallel()
 
-	mockCardRepo := new(mocks.MockCardRepository)
-	mockAccountRepo := new(mocks.MockAccountRepository)
+	mockRepo := new(mocks.MockRepository)
 
-	findAccountUsecase := usecases.NewFindOneAccountUsecase(mockAccountRepo)
+	findAccountUsecase := usecases.NewFindOneAccountUsecase(mockRepo)
 
-	sut := NewFindCardUsecase(mockCardRepo, findAccountUsecase)
+	sut := NewFindCardUsecase(mockRepo, findAccountUsecase)
 
-	card := &domain.Card{
-		Id:        1,
+	card := infra.Card{
+		ID:        1,
 		Amount:    200,
-		AccountId: 1,
+		AccountID: 1,
 	}
 
-	account := &domain.Account{
-		Id:       1,
-		TenantId: 1,
+	account := infra.Account{
+		ID:       1,
+		TenantID: 1,
 		Status:   "active",
 	}
 
 	t.Run("Error to find account", func(t *testing.T) {
-		mockAccountRepo.On("FindById").Return(nil, nil)
-		defer mockAccountRepo.On("FindById").Unset()
+		mockRepo.On("GetAccount").Return(nil, sql.ErrNoRows)
+		defer mockRepo.On("GetAccount").Unset()
 
-		result, err := sut.FindOne(1, 1, card.AccountId)
+		result, err := sut.FindOne(1, 1, card.AccountID)
 
 		assert.Nil(t, result)
-		assert.Equal(t, fmt.Sprintf("account not found with id %d", card.AccountId),
+		assert.Equal(t, fmt.Sprintf("account not found with id %d", card.AccountID),
 			err.Error())
 	})
 
 	t.Run("Error to find card by id", func(t *testing.T) {
-		mockAccountRepo.On("FindById").Return(account, nil)
-		defer mockAccountRepo.On("FindById").Unset()
+		mockRepo.On("GetAccount").Return(account, nil)
+		defer mockRepo.On("GetAccount").Unset()
 
-		mockCardRepo.On("FindById").Return(nil, errors.New("Internal error"))
-		defer mockCardRepo.On("FindById").Unset()
+		mockRepo.On("GetCard").Return(nil, errors.New("Internal error"))
+		defer mockRepo.On("GetCard").Unset()
 
-		result, err := sut.FindOne(1, 1, card.AccountId)
+		result, err := sut.FindOne(1, 1, card.AccountID)
 
 		assert.Nil(t, result)
 		assert.Equal(t, "Internal error", err.Error())
 	})
 
 	t.Run("Erro card not found by id", func(t *testing.T) {
-		mockAccountRepo.On("FindById").Return(account, nil)
-		defer mockAccountRepo.On("FindById").Unset()
+		mockRepo.On("GetAccount").Return(account, nil)
+		defer mockRepo.On("GetAccount").Unset()
 
-		mockCardRepo.On("FindById").Return(nil, nil)
-		defer mockCardRepo.On("FindById").Unset()
+		mockRepo.On("GetCard").Return(nil, sql.ErrNoRows)
+		defer mockRepo.On("GetCard").Unset()
 
-		result, err := sut.FindOne(1, 1, card.AccountId)
+		result, err := sut.FindOne(1, 1, card.AccountID)
 
 		assert.Nil(t, result)
-		assert.Equal(t, fmt.Sprintf("card not found with id %d", card.Id),
+		assert.Equal(t, fmt.Sprintf("card not found with id %d", card.ID),
 			err.Error())
 	})
 
 	t.Run("Success", func(t *testing.T) {
-		mockAccountRepo.On("FindById").Return(account, nil)
-		defer mockAccountRepo.On("FindById").Unset()
+		mockRepo.On("GetAccount").Return(account, nil)
+		defer mockRepo.On("GetAccount").Unset()
 
-		mockCardRepo.On("FindById").Return(card, nil)
-		defer mockCardRepo.On("FindById").Unset()
+		mockRepo.On("GetCard").Return(card, nil)
+		defer mockRepo.On("GetCard").Unset()
 
-		result, err := sut.FindOne(1, 1, card.AccountId)
+		result, err := sut.FindOne(1, 1, card.AccountID)
 
 		assert.NoError(t, err)
-		assert.Equal(t, card, result)
+		assert.Equal(t, &card, result)
 	})
 }
