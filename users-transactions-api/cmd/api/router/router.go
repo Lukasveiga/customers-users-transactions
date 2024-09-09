@@ -29,8 +29,17 @@ func Routes(handlers *factory.Handlers) *gin.Engine {
 	card := router.Group(baseUrl)
 	{
 		card.POST("/card/:accountId", handlers.CardHandler.Create)
-		card.GET("/card/:cardId/account/:accountId", handlers.CardHandler.FindCard)
+		card.GET("/card/:cardId/account/:accountId", handlers.CardHandler.FindOne)
+		card.GET("/card/account/:accountId", handlers.CardHandler.FindAll)
 	}
 
+	transaction := router.Group(baseUrl)
+	{
+		transaction.POST("/transaction/account/:accountId", handlers.TransactionHandler.Create)
+		transaction.GET("/transaction/:transactionId/account/:accountId/card/:cardId",
+			handlers.TransactionHandler.FindOne)
+		transaction.GET("/transaction/account/:accountId/card/:cardId",
+			handlers.TransactionHandler.FindAll)
+	}
 	return router
 }

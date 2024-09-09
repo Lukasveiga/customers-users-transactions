@@ -25,8 +25,9 @@ func TestCardHandler(t *testing.T) {
 	findOneAccountUsecase := accountUsecases.NewFindOneAccountUsecase(mockRepo)
 	createCardUsecase := cardUsecases.NewCreateCardUsecase(mockRepo, findOneAccountUsecase)
 	findCardUsecase := cardUsecases.NewFindCardUsecase(mockRepo, findOneAccountUsecase)
+	findAllCardsUsecase := cardUsecases.NewFindAllCards(mockRepo, findOneAccountUsecase)
 
-	sut := NewCardHandler(createCardUsecase, findCardUsecase)
+	sut := NewCardHandler(createCardUsecase, findCardUsecase, findAllCardsUsecase)
 
 	account := infra.Account{
 		ID:       1,
@@ -213,7 +214,7 @@ func TestCardHandler(t *testing.T) {
 				Value: "invalid",
 			}}
 
-		sut.FindCard(c)
+		sut.FindOne(c)
 
 		var responseBody map[string]string
 		err := json.NewDecoder(res.Body).Decode(&responseBody)
@@ -245,7 +246,7 @@ func TestCardHandler(t *testing.T) {
 				Value: "1",
 			}}
 
-		sut.FindCard(c)
+		sut.FindOne(c)
 
 		var responseBody map[string]string
 		err := json.NewDecoder(res.Body).Decode(&responseBody)
@@ -281,7 +282,7 @@ func TestCardHandler(t *testing.T) {
 				Value: fmt.Sprint(card.ID),
 			}}
 
-		sut.FindCard(c)
+		sut.FindOne(c)
 
 		var responseBody infra.Card
 		err := json.NewDecoder(res.Body).Decode(&responseBody)
@@ -291,4 +292,134 @@ func TestCardHandler(t *testing.T) {
 		assert.Equal(t, http.StatusOK, res.Result().StatusCode)
 		assert.Equal(t, card, responseBody)
 	})
+
+	t.Run("[FindAll] Invalid tenant id", func(t *testing.T) {
+		res := httptest.NewRecorder()
+		c, _ := gin.CreateTestContext(res)
+
+		c.Request = httptest.NewRequest("GET", "/cards", nil)
+		c.Request.Header.Set("Content-Type", "application/json")
+		c.Request.Header.Set("tenant-id", "invalid")
+
+		sut.FindAll(c)
+
+		var responseBody map[string]string
+		err := json.NewDecoder(res.Body).Decode(&responseBody)
+
+		assert.NoError(t, err)
+
+		assert.Equal(t, http.StatusBadRequest, res.Result().StatusCode)
+		assert.Equal(t, "Invalid tenant-id", responseBody["error"])
+	})
+
+	t.Run("[FindAll] Invalid account id", func(t *testing.T) {
+		res := httptest.NewRecorder()
+		c, _ := gin.CreateTestContext(res)
+
+		c.Request = httptest.NewRequest("GET", "/cards", nil)
+		c.Request.Header.Set("Content-Type", "application/json")
+		c.Request.Header.Set("tenant-id", "1")
+		c.Params = []gin.Param{{
+			Key:   "accountId",
+			Value: "invalid",
+		}}
+
+		sut.FindAll(c)
+
+		var responseBody map[string]string
+		err := json.NewDecoder(res.Body).Decode(&responseBody)
+
+		assert.NoError(t, err)
+
+		assert.Equal(t, http.StatusBadRequest, res.Result().StatusCode)
+		assert.Equal(t, "Invalid account id", responseBody["error"])
+	})
+
+	t.Run("[FindAll] Internal server error", func(t *testing.T) {
+		mockRepo.On("GetAccount").Return(nil, errors.New("internal error"))
+		defer mockRepo.On("GetAccount").Unset()
+
+		res := httptest.NewRecorder()
+		c, _ := gin.CreateTestContext(res)
+
+		c.Request = httptest.NewRequest("GET", "/cards", nil)
+		c.Request.Header.Set("Content-Type", "application/json")
+		c.Request.Header.Set("tenant-id", "1")
+		c.Params = []gin.Param{{
+			Key:   "accountId",
+			Value: fmt.Sprint(account.ID),
+		}}
+
+		sut.FindAll(c)
+
+		var responseBody map[string]string
+		err := json.NewDecoder(res.Body).Decode(&responseBody)
+
+		assert.NoError(t, err)
+
+		assert.Equal(t, http.StatusInternalServerError, res.Result().StatusCode)
+		assert.Equal(t, "Internal Server Error", responseBody["error"])
+	})
+
+	t.Run("[FindAll] Account not found error", func(t *testing.T) {
+		mockRepo.On("GetAccount").Return(nil, sql.ErrNoRows)
+		defer mockRepo.On("GetAccount").Unset()
+
+		res := httptest.NewRecorder()
+		c, _ := gin.CreateTestContext(res)
+
+		c.Request = httptest.NewRequest("GET", "/cards", nil)
+		c.Request.Header.Set("Content-Type", "application/json")
+		c.Request.Header.Set("tenant-id", "1")
+		c.Params = []gin.Param{{
+			Key:   "accountId",
+			Value: fmt.Sprint(account.ID),
+		}}
+
+		sut.FindAll(c)
+
+		var responseBody map[string]string
+		err := json.NewDecoder(res.Body).Decode(&responseBody)
+
+		assert.NoError(t, err)
+
+		assert.Equal(t, http.StatusNotFound, res.Result().StatusCode)
+		assert.Equal(t, fmt.Sprintf("account not found with id %d", account.ID),
+			responseBody["error"])
+	})
+
+	t.Run("[FindAll] Success", func(t *testing.T) {
+		mockRepo.On("GetAccount").Return(account, nil)
+		defer mockRepo.On("GetAccount").Unset()
+
+		cards := []infra.Card{
+			card,
+		}
+
+		mockRepo.On("GetCards").Return(cards, nil)
+		defer mockRepo.On("GetCards").Unset()
+
+		res := httptest.NewRecorder()
+		c, _ := gin.CreateTestContext(res)
+
+		c.Request = httptest.NewRequest("GET", "/cards", nil)
+		c.Request.Header.Set("Content-Type", "application/json")
+		c.Request.Header.Set("tenant-id", "1")
+		c.Params = []gin.Param{{
+			Key:   "accountId",
+			Value: fmt.Sprint(account.ID),
+		}}
+
+		sut.FindAll(c)
+
+		var responseBody []infra.Card
+		err := json.NewDecoder(res.Body).Decode(&responseBody)
+
+		assert.NoError(t, err)
+
+		assert.Equal(t, http.StatusOK, res.Result().StatusCode)
+		assert.Len(t, responseBody, 1)
+		assert.Equal(t, cards, responseBody)
+	})
+
 }

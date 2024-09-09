@@ -10,6 +10,7 @@ import (
 	"net/http/httptest"
 	"testing"
 
+	"github.com/Lukasveiga/customers-users-transaction/internal/handlers/dto"
 	infra "github.com/Lukasveiga/customers-users-transaction/internal/infra/repository/sqlc"
 	"github.com/Lukasveiga/customers-users-transaction/internal/mocks"
 	usecases "github.com/Lukasveiga/customers-users-transaction/internal/usecases/account"
@@ -89,13 +90,13 @@ func TestAccountHandler(t *testing.T) {
 
 		sut.Create(c)
 
-		var responseBody infra.Account
+		var responseBody dto.AccountResponse
 		err := json.NewDecoder(res.Body).Decode(&responseBody)
 
 		assert.NoError(t, err)
 
 		assert.Equal(t, http.StatusCreated, res.Result().StatusCode)
-		assert.Equal(t, account, responseBody)
+		assert.Equal(t, dto.AccountToResponse(account), responseBody)
 	})
 
 	t.Run("[FindOne] Invalid tenant id", func(t *testing.T) {
@@ -211,13 +212,13 @@ func TestAccountHandler(t *testing.T) {
 
 		sut.FindOne(c)
 
-		var responseBody infra.Account
+		var responseBody dto.AccountResponse
 		err := json.NewDecoder(res.Body).Decode(&responseBody)
 
 		assert.NoError(t, err)
 
 		assert.Equal(t, http.StatusOK, res.Result().StatusCode)
-		assert.Equal(t, account, responseBody)
+		assert.Equal(t, dto.AccountToResponse(account), responseBody)
 	})
 
 	t.Run("[FindAll] Invalid tenant id", func(t *testing.T) {
@@ -301,14 +302,14 @@ func TestAccountHandler(t *testing.T) {
 
 		sut.FindAll(c)
 
-		var responseBody []infra.Account
+		var responseBody []dto.AccountResponse
 		err := json.NewDecoder(res.Body).Decode(&responseBody)
 
 		assert.NoError(t, err)
 
 		assert.Equal(t, http.StatusOK, res.Result().StatusCode)
 		assert.Len(t, responseBody, 1)
-		assert.Equal(t, accounts, responseBody)
+		assert.Equal(t, []dto.AccountResponse{dto.AccountToResponse(account)}, responseBody)
 	})
 
 	t.Run("[Active] Invalid tenant id", func(t *testing.T) {

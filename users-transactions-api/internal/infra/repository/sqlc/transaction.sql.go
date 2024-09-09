@@ -39,3 +39,65 @@ func (q *Queries) CreateTransaction(ctx context.Context, arg CreateTransactionPa
 	)
 	return i, err
 }
+
+const getTransaction = `-- name: GetTransaction :one
+SELECT id, card_id, kind, value, created_at, updated_at, deleted_at FROM transactions 
+WHERE card_id = $1 AND id = $2
+LIMIT 1
+`
+
+type GetTransactionParams struct {
+	CardID int32 `json:"card_id"`
+	ID     int32 `json:"id"`
+}
+
+func (q *Queries) GetTransaction(ctx context.Context, arg GetTransactionParams) (Transaction, error) {
+	row := q.db.QueryRowContext(ctx, getTransaction, arg.CardID, arg.ID)
+	var i Transaction
+	err := row.Scan(
+		&i.ID,
+		&i.CardID,
+		&i.Kind,
+		&i.Value,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+		&i.DeletedAt,
+	)
+	return i, err
+}
+
+const getTransactions = `-- name: GetTransactions :many
+SELECT id, card_id, kind, value, created_at, updated_at, deleted_at FROM transactions 
+WHERE card_id = $1
+`
+
+func (q *Queries) GetTransactions(ctx context.Context, cardID int32) ([]Transaction, error) {
+	rows, err := q.db.QueryContext(ctx, getTransactions, cardID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []Transaction{}
+	for rows.Next() {
+		var i Transaction
+		if err := rows.Scan(
+			&i.ID,
+			&i.CardID,
+			&i.Kind,
+			&i.Value,
+			&i.CreatedAt,
+			&i.UpdatedAt,
+			&i.DeletedAt,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}

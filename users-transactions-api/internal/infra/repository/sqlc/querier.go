@@ -18,6 +18,8 @@ type Querier interface {
 	GetCard(ctx context.Context, arg GetCardParams) (Card, error)
 	GetCards(ctx context.Context, accountID int32) ([]Card, error)
 	GetTenant(ctx context.Context, id int32) (Tenant, error)
+	GetTransaction(ctx context.Context, arg GetTransactionParams) (Transaction, error)
+	GetTransactions(ctx context.Context, cardID int32) ([]Transaction, error)
 	UpdateAccount(ctx context.Context, arg UpdateAccountParams) (Account, error)
 }
 
