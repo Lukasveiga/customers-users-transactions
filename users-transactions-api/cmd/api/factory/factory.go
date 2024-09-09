@@ -10,12 +10,14 @@ import (
 	accountUsecases "github.com/Lukasveiga/customers-users-transaction/internal/usecases/account"
 	cardUsecases "github.com/Lukasveiga/customers-users-transaction/internal/usecases/cards"
 	tenantUsecases "github.com/Lukasveiga/customers-users-transaction/internal/usecases/tenant"
+	transactionUsecases "github.com/Lukasveiga/customers-users-transaction/internal/usecases/transactions"
 )
 
 type Handlers struct {
-	AccountHandler *handlers.AccountHandler
-	TenantHandler  *handlers.TenantHandler
-	CardHandler    *handlers.CardHandler
+	AccountHandler     *handlers.AccountHandler
+	TenantHandler      *handlers.TenantHandler
+	CardHandler        *handlers.CardHandler
+	TransactionHandler *handlers.TransactionHandler
 }
 
 func InitHandlers(dbConnection *sql.DB) *Handlers {
@@ -30,21 +32,30 @@ func InitHandlers(dbConnection *sql.DB) *Handlers {
 	deleteAaccountUsecase := accountUsecases.NewInactiveAccountUsecase(repository)
 
 	// Tenant usecases
-	findOneTenantUseCase := tenantUsecases.NewFindOneTenantUseCase(repository)
+	findOneTenantUsecase := tenantUsecases.NewFindOneTenantUseCase(repository)
 
 	// Card usecases
 	createCardUsecase := cardUsecases.NewCreateCardUsecase(repository, findOneAccountUsecase)
 	findCardUsecase := cardUsecases.NewFindCardUsecase(repository, findOneAccountUsecase)
+	findAllCardsUsecase := cardUsecases.NewFindAllCards(repository, findOneAccountUsecase)
+
+	// Transaction usecases
+	createTransactionUsecase := transactionUsecases.NewCreateTransactionUsecase(repository, findCardUsecase)
+	findTransactionUsecase := transactionUsecases.NewFindTransactionUsecase(repository, findCardUsecase)
+	findTransactionsUsecase := transactionUsecases.NewFindAllTransactionsUsecase(repository, findCardUsecase)
 
 	// Handlers
 	accountHandler := handlers.NewAccountHandler(createAccountUsecase, findAllAccountsUsecase, findOneAccountUsecase, updateAccountUsecase, deleteAaccountUsecase)
-	tenantHandler := handlers.NewTenantHandler(findOneTenantUseCase)
-	cardHandler := handlers.NewCardHandler(createCardUsecase, findCardUsecase)
+	tenantHandler := handlers.NewTenantHandler(findOneTenantUsecase)
+	cardHandler := handlers.NewCardHandler(createCardUsecase, findCardUsecase, findAllCardsUsecase)
+	transactionHandler := handlers.NewTransactionHandler(createTransactionUsecase, findTransactionUsecase,
+		findTransactionsUsecase)
 
 	return &Handlers{
-		AccountHandler: accountHandler,
-		TenantHandler:  tenantHandler,
-		CardHandler:    cardHandler,
+		AccountHandler:     accountHandler,
+		TenantHandler:      tenantHandler,
+		CardHandler:        cardHandler,
+		TransactionHandler: transactionHandler,
 	}
 }
 

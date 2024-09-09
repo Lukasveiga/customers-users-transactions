@@ -1,9 +1,10 @@
 -- +goose Up
 -- +goose StatementBegin
-CREATE TABLE cards (
+CREATE TABLE transactions (
     id SERIAL PRIMARY KEY,
-    account_id INT REFERENCES accounts(id) ON DELETE CASCADE NOT NULL,
-    amount BIGINT DEFAULT 0 NOT NULL,
+    card_id INT REFERENCES cards(id) ON DELETE CASCADE NOT NULL,
+    kind VARCHAR(145) NOT NULL,
+    value BIGINT NOT NULL,
     created_at timestamptz NOT NULL DEFAULT 'now()',
     updated_at timestamptz,
     deleted_at timestamptz
@@ -12,5 +13,5 @@ CREATE TABLE cards (
 
 -- +goose Down
 -- +goose StatementBegin
-DROP TABLE IF EXISTS cards CASCADE;
+DROP TABLE IF EXISTS transactions CASCADE;
 -- +goose StatementEnd

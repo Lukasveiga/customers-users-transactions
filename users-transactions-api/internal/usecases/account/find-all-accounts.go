@@ -7,17 +7,17 @@ import (
 	infra "github.com/Lukasveiga/customers-users-transaction/internal/infra/repository/sqlc"
 )
 
-type FindAllUsecase struct {
+type FindAllAccountsUsecase struct {
 	repo infra.Querier
 }
 
-func NewFindAllAccountsUsecase(repo infra.Querier) *FindAllUsecase {
-	return &FindAllUsecase{
+func NewFindAllAccountsUsecase(repo infra.Querier) *FindAllAccountsUsecase {
+	return &FindAllAccountsUsecase{
 		repo: repo,
 	}
 }
 
-func (uc *FindAllUsecase) FindAll(tenantId int32) ([]infra.Account, error) {
+func (uc *FindAllAccountsUsecase) FindAll(tenantId int32) ([]infra.Account, error) {
 	accounts := make([]infra.Account, 0)
 
 	result, err := uc.repo.GetAccounts(context.Background(), tenantId)

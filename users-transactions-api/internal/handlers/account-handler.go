@@ -5,6 +5,7 @@ import (
 	"net/http"
 	"strconv"
 
+	"github.com/Lukasveiga/customers-users-transaction/internal/handlers/dto"
 	"github.com/Lukasveiga/customers-users-transaction/internal/handlers/tools"
 	"github.com/Lukasveiga/customers-users-transaction/internal/shared"
 	usecases "github.com/Lukasveiga/customers-users-transaction/internal/usecases/account"
@@ -13,13 +14,13 @@ import (
 
 type AccountHandler struct {
 	createAccountUsecase   *usecases.CreateAccountUsecase
-	findAllAccountsUsecase *usecases.FindAllUsecase
+	findAllAccountsUsecase *usecases.FindAllAccountsUsecase
 	findOneAccountUsecase  *usecases.FindOneAccountUsecase
 	activeAccountUsecase   *usecases.ActiveAccountUsecase
 	inactiveAccountUsecase *usecases.InactiveAccountUsecase
 }
 
-func NewAccountHandler(createAccountUsecase *usecases.CreateAccountUsecase, findAllAccountsUsecase *usecases.FindAllUsecase, findOneAccountUsecase *usecases.FindOneAccountUsecase, activeAccountUsecase *usecases.ActiveAccountUsecase, inactiveAccountUsecase *usecases.InactiveAccountUsecase) *AccountHandler {
+func NewAccountHandler(createAccountUsecase *usecases.CreateAccountUsecase, findAllAccountsUsecase *usecases.FindAllAccountsUsecase, findOneAccountUsecase *usecases.FindOneAccountUsecase, activeAccountUsecase *usecases.ActiveAccountUsecase, inactiveAccountUsecase *usecases.InactiveAccountUsecase) *AccountHandler {
 	return &AccountHandler{
 		createAccountUsecase:   createAccountUsecase,
 		findAllAccountsUsecase: findAllAccountsUsecase,
@@ -43,7 +44,7 @@ func (ah *AccountHandler) Create(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusCreated, savedAccount)
+	c.JSON(http.StatusCreated, dto.AccountToResponse(*savedAccount))
 }
 
 func (ah *AccountHandler) FindOne(c *gin.Context) {
@@ -72,7 +73,7 @@ func (ah *AccountHandler) FindOne(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusOK, account)
+	c.JSON(http.StatusOK, dto.AccountToResponse(*account))
 }
 
 func (ah *AccountHandler) FindAll(c *gin.Context) {
@@ -89,7 +90,12 @@ func (ah *AccountHandler) FindAll(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusOK, accounts)
+	accountsResponse := make([]dto.AccountResponse, 0)
+	for _, account := range accounts {
+		accountsResponse = append(accountsResponse, dto.AccountToResponse(account))
+	}
+
+	c.JSON(http.StatusOK, accountsResponse)
 }
 
 func (ah *AccountHandler) Active(c *gin.Context) {

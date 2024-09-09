@@ -135,3 +135,25 @@ func (mock *MockRepository) CreateTransactionTx(ctx context.Context, arg infra.C
 
 	return infra.Transaction{}, args.Error(1)
 }
+
+func (mock *MockRepository) GetTransaction(ctx context.Context, arg infra.GetTransactionParams) (infra.Transaction, error) {
+	args := mock.Called()
+	result := args.Get(0)
+
+	if result != nil {
+		return result.(infra.Transaction), args.Error(1)
+	}
+
+	return infra.Transaction{}, args.Error(1)
+}
+
+func (mock *MockRepository) GetTransactions(ctx context.Context, cardID int32) ([]infra.Transaction, error) {
+	args := mock.Called()
+	result := args.Get(0)
+
+	if result != nil {
+		return result.([]infra.Transaction), args.Error(1)
+	}
+
+	return []infra.Transaction{}, args.Error(1)
+}
