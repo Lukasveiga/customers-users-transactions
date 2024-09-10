@@ -56,7 +56,10 @@ func startServer(t *testing.T, transRepo TransactionInfoRepository) string {
 	listener, err := net.Listen("tcp", ":0")
 	assert.NoError(t, err)
 
-	go grpcServer.Serve(listener)
+	go func() {
+		err := grpcServer.Serve(listener)
+		assert.NoError(t, err)
+	}()
 
 	return listener.Addr().String()
 }
