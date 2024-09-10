@@ -1,5 +1,4 @@
 name: Test
-
 on:
   pull_request:
     branches:
@@ -9,9 +8,11 @@ jobs:
   test:
     name: Test
     runs-on: ubuntu-latest
+    strategy:
+      matrix: { dir: ['./users-transactions-api', './pdf-generator-api']}
     defaults:
       run:
-        working-directory: ./users-transactions-api
+        working-directory: ${{ matrix.dir }}
 
     steps:
       - uses: actions/checkout@v4
