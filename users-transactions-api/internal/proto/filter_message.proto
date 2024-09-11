@@ -1,0 +1,7 @@
+syntax = "proto3";
+option go_package = "/genproto";
+
+message Filter {
+    uint32 tenant_id = 1;
+    uint32 account_id = 2;
+}

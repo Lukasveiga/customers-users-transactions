@@ -16,10 +16,16 @@ lint:
 	golangci-lint run
 
 run:
-	go run cmd/api/main.go
+	go run cmd/main.go
 
 sqlc:
 	sqlc generate
+
+proto-gen:
+	@protoc -I=./internal/proto --go_out=./internal/ --go-grpc_opt=require_unimplemented_servers=false --go-grpc_out=./internal ./internal/proto/*.proto
+
+proto-clear:
+	@rm -r ./internal/genproto
 
 migrate-status:
 	$(GOOSE) -dir ./migrations postgres "$(DB_URL)" status

@@ -101,3 +101,55 @@ func (q *Queries) GetTransactions(ctx context.Context, cardID int32) ([]Transact
 	}
 	return items, nil
 }
+
+const searchTransactions = `-- name: SearchTransactions :many
+SELECT
+t.id,
+t.card_id,
+t.kind,
+t.value
+FROM transactions t
+JOIN cards c ON t.card_id = c.id
+JOIN accounts a ON c.account_id = a.id
+WHERE a.tenant_id = $1 AND a.id = $2
+`
+
+type SearchTransactionsParams struct {
+	TenantID  int32 `json:"tenant_id"`
+	Accountid int32 `json:"accountid"`
+}
+
+type SearchTransactionsRow struct {
+	ID     int32  `json:"id"`
+	CardID int32  `json:"card_id"`
+	Kind   string `json:"kind"`
+	Value  int64  `json:"value"`
+}
+
+func (q *Queries) SearchTransactions(ctx context.Context, arg SearchTransactionsParams) ([]SearchTransactionsRow, error) {
+	rows, err := q.db.QueryContext(ctx, searchTransactions, arg.TenantID, arg.Accountid)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []SearchTransactionsRow{}
+	for rows.Next() {
+		var i SearchTransactionsRow
+		if err := rows.Scan(
+			&i.ID,
+			&i.CardID,
+			&i.Kind,
+			&i.Value,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
