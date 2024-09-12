@@ -30,7 +30,7 @@ func (ti *TransactionInfo) SearchTransactionInfo(req *genproto.SearchTransaction
 
 	if err != nil {
 		if err == sql.ErrNoRows {
-			return status.Errorf(codes.NotFound, fmt.Sprintf("tenant with id %d not found", filter.GetTenantId()))
+			return status.Errorf(codes.NotFound, fmt.Sprintf("tenant with id %d not found", filter.GetTenantId()), err)
 		}
 
 		slog.Error(
