@@ -4,7 +4,10 @@ import (
 	"fmt"
 
 	"github.com/Lukasveiga/customers-users-transactions/internal/genproto"
+	"github.com/Lukasveiga/customers-users-transactions/internal/shared"
 	"github.com/Lukasveiga/customers-users-transactions/internal/utils"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 )
 
 type TransactionReport struct {
@@ -32,7 +35,11 @@ func (r *TransactionReport) GeneratePdfReport(input GenerateInputParams) (string
 	result, err := SearchTransactionInformation(r.client, filter)
 
 	if err != nil {
-		// TODO: Custom Error + Logging
+		if status.Code(err) == codes.NotFound {
+			return "", &shared.EntityNotFoundError{
+				Message: err.Error(),
+			}
+		}
 		return "", err
 	}
 
@@ -49,7 +56,6 @@ func (r *TransactionReport) GeneratePdfReport(input GenerateInputParams) (string
 	path, err := utils.PdfGenerator(inputPdf)
 
 	if err != nil {
-		// TODO: Custom Error + Logging
 		return "", err
 	}
 

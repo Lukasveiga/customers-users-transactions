@@ -5,6 +5,8 @@ import (
 	"os"
 	"strconv"
 
+	"github.com/Lukasveiga/customers-users-transactions/internal/handlers/tools"
+	"github.com/Lukasveiga/customers-users-transactions/internal/shared"
 	"github.com/Lukasveiga/customers-users-transactions/internal/usecases"
 	"github.com/gin-gonic/gin"
 )
@@ -38,7 +40,12 @@ func (h *ReportHandler) SendReport(c *gin.Context) {
 	})
 
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Internal Server Error"})
+		if enfErr, ok := err.(*shared.EntityNotFoundError); ok {
+			c.JSON(http.StatusNotFound, gin.H{"error": enfErr.Message})
+			return
+		}
+
+		tools.LogInternalServerError(c, "report", "SendReport", err)
 		return
 	}
 

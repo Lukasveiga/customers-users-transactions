@@ -44,7 +44,6 @@ func PdfGenerator(input PdfGeneratorInputParams) (string, error) {
 
 	err := pdf.OutputFileAndClose(filePath)
 	if err != nil {
-		// TODO: Custom Error + Logging
 		return "", err
 	}
 
