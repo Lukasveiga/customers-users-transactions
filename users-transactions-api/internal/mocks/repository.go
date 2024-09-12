@@ -157,3 +157,14 @@ func (mock *MockRepository) GetTransactions(ctx context.Context, cardID int32) (
 
 	return []infra.Transaction{}, args.Error(1)
 }
+
+func (mock *MockRepository) SearchTransactions(ctx context.Context, arg infra.SearchTransactionsParams) ([]infra.SearchTransactionsRow, error) {
+	args := mock.Called()
+	result := args.Get(0)
+
+	if result != nil {
+		return result.([]infra.SearchTransactionsRow), args.Error(1)
+	}
+
+	return []infra.SearchTransactionsRow{}, args.Error(1)
+}

@@ -1,0 +1,12 @@
+syntax = "proto3";
+option go_package = "/genproto";
+
+import "transaction_info_message.proto";
+import "filter_message.proto";
+
+message SearchTransactionInfoRequest { Filter filter = 1;}
+message SearchTransactionInfoResponse { TransactionInfo transactionInfo = 1;}
+
+service TransactionInfoService {
+    rpc SearchTransactionInfo(SearchTransactionInfoRequest) returns (stream SearchTransactionInfoResponse) {}
+}

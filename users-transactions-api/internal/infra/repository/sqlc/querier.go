@@ -20,6 +20,7 @@ type Querier interface {
 	GetTenant(ctx context.Context, id int32) (Tenant, error)
 	GetTransaction(ctx context.Context, arg GetTransactionParams) (Transaction, error)
 	GetTransactions(ctx context.Context, cardID int32) ([]Transaction, error)
+	SearchTransactions(ctx context.Context, arg SearchTransactionsParams) ([]SearchTransactionsRow, error)
 	UpdateAccount(ctx context.Context, arg UpdateAccountParams) (Account, error)
 }
 
