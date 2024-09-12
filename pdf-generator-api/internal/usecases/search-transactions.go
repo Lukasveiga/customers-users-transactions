@@ -3,7 +3,6 @@ package usecases
 import (
 	"context"
 	"io"
-	"log"
 	"time"
 
 	"github.com/Lukasveiga/customers-users-transactions/internal/genproto"
@@ -20,7 +19,7 @@ func SearchTransactionInformation(client genproto.TransactionInfoServiceClient,
 	stream, err := client.SearchTransactionInfo(ctx, req)
 
 	if err != nil {
-		log.Fatal("cannot search transaction information: ", err)
+		return nil, err
 	}
 
 	transactionInfo := make([]*genproto.TransactionInfo, 0)
@@ -33,7 +32,7 @@ func SearchTransactionInformation(client genproto.TransactionInfoServiceClient,
 		}
 
 		if err != nil {
-			log.Fatal("cannot receive transaction information response: ", err)
+			return nil, err
 		}
 
 		transactionInfo = append(transactionInfo, res.GetTransactionInfo())
