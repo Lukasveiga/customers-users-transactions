@@ -74,7 +74,8 @@ func TestTransactionRepository(t *testing.T) {
 		}
 
 		for i := 0; i < 5; i++ {
-			testQueries.CreateTransaction(ctx, inputParams)
+			_, err := testQueries.CreateTransaction(ctx, inputParams)
+			assert.NoError(t, err)
 		}
 
 		result, err := testQueries.SearchTransactions(ctx, SearchTransactionsParams{
