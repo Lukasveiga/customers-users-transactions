@@ -23,7 +23,7 @@ services:
       dockerfile: ./Dockerfile
     environment:
       PORT: ${PORT}
-      ENV: ${ENV}
+      ENV: prod
     depends_on:
       database:
         condition: service_healthy
@@ -36,7 +36,7 @@ services:
       dockerfile: ./Dockerfile
     environment:
       PORT: ${PORT}
-      ENV: ${ENV}
+      ENV: prod
     depends_on:
       database:
         condition: service_healthy

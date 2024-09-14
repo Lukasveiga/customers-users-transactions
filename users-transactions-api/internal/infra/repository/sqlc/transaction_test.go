@@ -60,4 +60,37 @@ func TestTransactionRepository(t *testing.T) {
 			assert.NotEmpty(t, transaction2)
 		}
 	})
+
+	t.Run("[SearchTransactions] should return filtered transactions", func(t *testing.T) {
+		tenantId := int32(2)
+		account := createTestAccount(t, tenantId)
+		card := createTestCard(t, account.ID)
+		ctx := context.Background()
+
+		inputParams := CreateTransactionParams{
+			CardID: card.ID,
+			Kind:   "Streaming Z",
+			Value:  100,
+		}
+
+		for i := 0; i < 5; i++ {
+			_, err := testQueries.CreateTransaction(ctx, inputParams)
+			assert.NoError(t, err)
+		}
+
+		result, err := testQueries.SearchTransactions(ctx, SearchTransactionsParams{
+			TenantID:  tenantId,
+			Accountid: account.ID,
+		})
+
+		assert.NoError(t, err)
+		assert.NotEmpty(t, result)
+		assert.Len(t, result, 5)
+
+		for _, trans := range result {
+			assert.NotEmpty(t, trans)
+			assert.Equal(t, inputParams.Kind, trans.Kind)
+			assert.Equal(t, inputParams.Value, trans.Value)
+		}
+	})
 }

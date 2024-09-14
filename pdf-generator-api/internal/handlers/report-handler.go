@@ -23,7 +23,7 @@ func (h *ReportHandler) SendReport(c *gin.Context) {
 	tenantId, err := strconv.ParseInt(c.Param("tenantId"), 0, 32)
 
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid tenant-id"})
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid tenant id"})
 		return
 	}
 

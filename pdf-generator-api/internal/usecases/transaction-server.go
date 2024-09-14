@@ -1,6 +1,7 @@
 package usecases
 
 import (
+	"database/sql"
 	"log"
 
 	"github.com/Lukasveiga/customers-users-transactions/internal/genproto"
@@ -36,6 +37,9 @@ func (server *TransactionInfoServer) SearchTransactionInfo(req *genproto.SearchT
 		})
 
 	if err != nil {
+		if err == sql.ErrNoRows {
+			return status.Errorf(codes.NotFound, "sql not found err: %v", err)
+		}
 		return status.Errorf(codes.Internal, "unexpected error: %v", err)
 	}
 	return nil
