@@ -1,18 +1,17 @@
 package utils
 
 import (
+	"github.com/Lukasveiga/customers-users-transactions/internal/ports"
 	"github.com/jung-kurt/gofpdf"
 )
 
-type PdfGeneratorInputParams struct {
-	Title    string
-	Font     string
-	FontSize float64
-	Headers  []string
-	Data     [][]string
+type GofpdfGenerator struct{}
+
+func NewGofpdfGenerator() *GofpdfGenerator {
+	return &GofpdfGenerator{}
 }
 
-func PdfGenerator(input PdfGeneratorInputParams) (string, error) {
+func (g *GofpdfGenerator) Generate(input ports.PdfGeneratorInputParams) (string, error) {
 	pdf := gofpdf.New("P", "mm", "A4", "")
 	pdf.SetHeaderFunc(func() {
 		pdf.SetFont(input.Font, "B", input.FontSize)

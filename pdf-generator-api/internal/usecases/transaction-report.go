@@ -4,19 +4,21 @@ import (
 	"fmt"
 
 	"github.com/Lukasveiga/customers-users-transactions/internal/genproto"
+	"github.com/Lukasveiga/customers-users-transactions/internal/ports"
 	"github.com/Lukasveiga/customers-users-transactions/internal/shared"
-	"github.com/Lukasveiga/customers-users-transactions/internal/utils"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 )
 
 type TransactionReport struct {
-	client genproto.TransactionInfoServiceClient
+	client       genproto.TransactionInfoServiceClient
+	pdfGenerator ports.PdfGenerator
 }
 
-func NewTransactionReport(client genproto.TransactionInfoServiceClient) *TransactionReport {
+func NewTransactionReport(client genproto.TransactionInfoServiceClient, pdfGenerator ports.PdfGenerator) *TransactionReport {
 	return &TransactionReport{
-		client: client,
+		client:       client,
+		pdfGenerator: pdfGenerator,
 	}
 }
 
@@ -45,7 +47,7 @@ func (r *TransactionReport) GeneratePdfReport(input GenerateInputParams) (string
 
 	data := convertData(result)
 
-	inputPdf := utils.PdfGeneratorInputParams{
+	inputPdf := ports.PdfGeneratorInputParams{
 		Title:    fmt.Sprintf("Account %d Transactions Information", input.AccountId),
 		Font:     "Arial",
 		FontSize: 12,
@@ -53,7 +55,7 @@ func (r *TransactionReport) GeneratePdfReport(input GenerateInputParams) (string
 		Data:     data,
 	}
 
-	path, err := utils.PdfGenerator(inputPdf)
+	path, err := r.pdfGenerator.Generate(inputPdf)
 
 	if err != nil {
 		return "", err

@@ -2,6 +2,7 @@ package usecases
 
 import (
 	"context"
+	"database/sql"
 	"errors"
 	"fmt"
 	"sync"
@@ -48,6 +49,8 @@ func (repo *InMemoryTransactionInfoRepository) Search(ctx context.Context, filte
 	repo.mutex.RLock()
 	defer repo.mutex.RUnlock()
 
+	count := 0
+
 	for _, transInfo := range repo.data {
 
 		if ctx.Err() == context.Canceled || ctx.Err() == context.DeadlineExceeded {
@@ -66,8 +69,15 @@ func (repo *InMemoryTransactionInfoRepository) Search(ctx context.Context, filte
 			if err != nil {
 				return err
 			}
+
+			count++
 		}
 	}
+
+	if count <= 0 {
+		return sql.ErrNoRows
+	}
+
 	return nil
 }
 

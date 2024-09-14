@@ -8,6 +8,7 @@ import (
 	"github.com/Lukasveiga/customers-users-transactions/internal/genproto"
 	"github.com/Lukasveiga/customers-users-transactions/internal/handlers"
 	"github.com/Lukasveiga/customers-users-transactions/internal/usecases"
+	"github.com/Lukasveiga/customers-users-transactions/internal/utils"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
 )
@@ -32,7 +33,7 @@ func initClient(PORT string) genproto.TransactionInfoServiceClient {
 }
 
 func initApiServer(client genproto.TransactionInfoServiceClient, PORT string) {
-	transactionReport := usecases.NewTransactionReport(client)
+	transactionReport := usecases.NewTransactionReport(client, utils.NewGofpdfGenerator())
 	reportHandler := handlers.NewReportHandler(transactionReport)
 
 	router := api.Routes(reportHandler)
