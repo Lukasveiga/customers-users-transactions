@@ -5,7 +5,7 @@ import (
 	"io"
 	"testing"
 
-	"github.com/Lukasveiga/customers-users-transactions/internal/genproto"
+	"github.com/Lukasveiga/customers-users-transactions/pdf-generator-api/internal/genproto"
 	"github.com/stretchr/testify/assert"
 )
 

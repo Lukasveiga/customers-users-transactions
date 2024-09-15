@@ -4,7 +4,7 @@ import (
 	"context"
 	"log/slog"
 
-	infra "github.com/Lukasveiga/customers-users-transaction/internal/infra/repository/sqlc"
+	infra "github.com/Lukasveiga/customers-users-transaction/users-transactions-api/internal/infra/repository/sqlc"
 )
 
 type FindAllAccountsUsecase struct {

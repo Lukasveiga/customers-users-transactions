@@ -5,7 +5,7 @@ import (
 	"io"
 	"time"
 
-	"github.com/Lukasveiga/customers-users-transactions/internal/genproto"
+	"github.com/Lukasveiga/customers-users-transactions/pdf-generator-api/internal/genproto"
 )
 
 func SearchTransactionInformation(client genproto.TransactionInfoServiceClient,

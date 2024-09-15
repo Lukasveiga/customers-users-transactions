@@ -1,7 +1,7 @@
 package mocks
 
 import (
-	"github.com/Lukasveiga/customers-users-transactions/internal/ports"
+	"github.com/Lukasveiga/customers-users-transactions/pdf-generator-api/internal/ports"
 	"github.com/stretchr/testify/mock"
 )
 

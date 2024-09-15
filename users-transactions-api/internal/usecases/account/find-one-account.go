@@ -5,8 +5,8 @@ import (
 	"database/sql"
 	"log/slog"
 
-	infra "github.com/Lukasveiga/customers-users-transaction/internal/infra/repository/sqlc"
-	"github.com/Lukasveiga/customers-users-transaction/internal/shared"
+	infra "github.com/Lukasveiga/customers-users-transaction/users-transactions-api/internal/infra/repository/sqlc"
+	"github.com/Lukasveiga/customers-users-transaction/users-transactions-api/internal/shared"
 )
 
 type FindOneAccountUsecase struct {

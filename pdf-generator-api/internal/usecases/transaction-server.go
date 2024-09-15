@@ -4,7 +4,7 @@ import (
 	"database/sql"
 	"log"
 
-	"github.com/Lukasveiga/customers-users-transactions/internal/genproto"
+	"github.com/Lukasveiga/customers-users-transactions/pdf-generator-api/internal/genproto"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 )

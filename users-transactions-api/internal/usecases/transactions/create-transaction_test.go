@@ -6,11 +6,11 @@ import (
 	"fmt"
 	"testing"
 
-	infra "github.com/Lukasveiga/customers-users-transaction/internal/infra/repository/sqlc"
-	"github.com/Lukasveiga/customers-users-transaction/internal/mocks"
-	"github.com/Lukasveiga/customers-users-transaction/internal/shared"
-	accountUsecases "github.com/Lukasveiga/customers-users-transaction/internal/usecases/account"
-	cardUsecases "github.com/Lukasveiga/customers-users-transaction/internal/usecases/cards"
+	infra "github.com/Lukasveiga/customers-users-transaction/users-transactions-api/internal/infra/repository/sqlc"
+	"github.com/Lukasveiga/customers-users-transaction/users-transactions-api/internal/mocks"
+	"github.com/Lukasveiga/customers-users-transaction/users-transactions-api/internal/shared"
+	accountUsecases "github.com/Lukasveiga/customers-users-transaction/users-transactions-api/internal/usecases/account"
+	cardUsecases "github.com/Lukasveiga/customers-users-transaction/users-transactions-api/internal/usecases/cards"
 	"github.com/stretchr/testify/assert"
 )
 

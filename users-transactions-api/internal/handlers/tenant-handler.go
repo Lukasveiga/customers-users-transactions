@@ -5,8 +5,8 @@ import (
 	"net/http"
 	"strconv"
 
-	"github.com/Lukasveiga/customers-users-transaction/internal/shared"
-	usecases "github.com/Lukasveiga/customers-users-transaction/internal/usecases/tenant"
+	"github.com/Lukasveiga/customers-users-transaction/users-transactions-api/internal/shared"
+	usecases "github.com/Lukasveiga/customers-users-transaction/users-transactions-api/internal/usecases/tenant"
 	"github.com/gin-gonic/gin"
 )
 

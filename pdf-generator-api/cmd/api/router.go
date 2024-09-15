@@ -1,7 +1,7 @@
 package api
 
 import (
-	"github.com/Lukasveiga/customers-users-transactions/internal/handlers"
+	"github.com/Lukasveiga/customers-users-transactions/pdf-generator-api/internal/handlers"
 	"github.com/gin-gonic/gin"
 )
 

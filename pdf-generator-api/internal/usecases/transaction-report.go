@@ -3,9 +3,9 @@ package usecases
 import (
 	"fmt"
 
-	"github.com/Lukasveiga/customers-users-transactions/internal/genproto"
-	"github.com/Lukasveiga/customers-users-transactions/internal/ports"
-	"github.com/Lukasveiga/customers-users-transactions/internal/shared"
+	"github.com/Lukasveiga/customers-users-transactions/pdf-generator-api/internal/genproto"
+	"github.com/Lukasveiga/customers-users-transactions/pdf-generator-api/internal/ports"
+	"github.com/Lukasveiga/customers-users-transactions/pdf-generator-api/internal/shared"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 )

@@ -10,10 +10,10 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	"github.com/Lukasveiga/customers-users-transaction/internal/handlers/dto"
-	infra "github.com/Lukasveiga/customers-users-transaction/internal/infra/repository/sqlc"
-	"github.com/Lukasveiga/customers-users-transaction/internal/mocks"
-	usecases "github.com/Lukasveiga/customers-users-transaction/internal/usecases/account"
+	"github.com/Lukasveiga/customers-users-transaction/users-transactions-api/internal/handlers/dto"
+	infra "github.com/Lukasveiga/customers-users-transaction/users-transactions-api/internal/infra/repository/sqlc"
+	"github.com/Lukasveiga/customers-users-transaction/users-transactions-api/internal/mocks"
+	usecases "github.com/Lukasveiga/customers-users-transaction/users-transactions-api/internal/usecases/account"
 	"github.com/gin-gonic/gin"
 	"github.com/stretchr/testify/assert"
 )

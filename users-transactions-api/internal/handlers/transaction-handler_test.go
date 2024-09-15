@@ -9,12 +9,12 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	"github.com/Lukasveiga/customers-users-transaction/internal/handlers/dto"
-	infra "github.com/Lukasveiga/customers-users-transaction/internal/infra/repository/sqlc"
-	"github.com/Lukasveiga/customers-users-transaction/internal/mocks"
-	accountUsecases "github.com/Lukasveiga/customers-users-transaction/internal/usecases/account"
-	cardUsecases "github.com/Lukasveiga/customers-users-transaction/internal/usecases/cards"
-	transactionUsecases "github.com/Lukasveiga/customers-users-transaction/internal/usecases/transactions"
+	"github.com/Lukasveiga/customers-users-transaction/users-transactions-api/internal/handlers/dto"
+	infra "github.com/Lukasveiga/customers-users-transaction/users-transactions-api/internal/infra/repository/sqlc"
+	"github.com/Lukasveiga/customers-users-transaction/users-transactions-api/internal/mocks"
+	accountUsecases "github.com/Lukasveiga/customers-users-transaction/users-transactions-api/internal/usecases/account"
+	cardUsecases "github.com/Lukasveiga/customers-users-transaction/users-transactions-api/internal/usecases/cards"
+	transactionUsecases "github.com/Lukasveiga/customers-users-transaction/users-transactions-api/internal/usecases/transactions"
 	"github.com/gin-gonic/gin"
 	"github.com/stretchr/testify/assert"
 )

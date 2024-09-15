@@ -1,4 +1,4 @@
-module github.com/Lukasveiga/customers-users-transactions
+module github.com/Lukasveiga/customers-users-transactions/pdf-generator-api
 
 go 1.22.4
 

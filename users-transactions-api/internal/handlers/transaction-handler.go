@@ -4,10 +4,10 @@ import (
 	"net/http"
 	"strconv"
 
-	"github.com/Lukasveiga/customers-users-transaction/internal/handlers/dto"
-	"github.com/Lukasveiga/customers-users-transaction/internal/handlers/tools"
-	"github.com/Lukasveiga/customers-users-transaction/internal/shared"
-	usecases "github.com/Lukasveiga/customers-users-transaction/internal/usecases/transactions"
+	"github.com/Lukasveiga/customers-users-transaction/users-transactions-api/internal/handlers/dto"
+	"github.com/Lukasveiga/customers-users-transaction/users-transactions-api/internal/handlers/tools"
+	"github.com/Lukasveiga/customers-users-transaction/users-transactions-api/internal/shared"
+	usecases "github.com/Lukasveiga/customers-users-transaction/users-transactions-api/internal/usecases/transactions"
 	"github.com/gin-gonic/gin"
 )
 

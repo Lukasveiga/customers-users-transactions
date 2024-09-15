@@ -3,7 +3,7 @@ package mocks
 import (
 	"context"
 
-	infra "github.com/Lukasveiga/customers-users-transaction/internal/infra/repository/sqlc"
+	infra "github.com/Lukasveiga/customers-users-transaction/users-transactions-api/internal/infra/repository/sqlc"
 	"github.com/stretchr/testify/mock"
 )
 

@@ -4,8 +4,8 @@ import (
 	"errors"
 	"testing"
 
-	"github.com/Lukasveiga/customers-users-transactions/internal/mocks"
-	"github.com/Lukasveiga/customers-users-transactions/internal/shared"
+	"github.com/Lukasveiga/customers-users-transactions/pdf-generator-api/internal/mocks"
+	"github.com/Lukasveiga/customers-users-transactions/pdf-generator-api/internal/shared"
 	"github.com/stretchr/testify/assert"
 )
 

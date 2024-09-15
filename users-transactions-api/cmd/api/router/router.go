@@ -3,7 +3,7 @@ package router
 import (
 	"net/http"
 
-	"github.com/Lukasveiga/customers-users-transaction/cmd/api/factory"
+	"github.com/Lukasveiga/customers-users-transaction/users-transactions-api/cmd/api/factory"
 	"github.com/gin-gonic/gin"
 )
 

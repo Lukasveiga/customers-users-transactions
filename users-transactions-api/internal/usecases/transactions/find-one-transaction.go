@@ -5,9 +5,9 @@ import (
 	"database/sql"
 	"log/slog"
 
-	infra "github.com/Lukasveiga/customers-users-transaction/internal/infra/repository/sqlc"
-	"github.com/Lukasveiga/customers-users-transaction/internal/shared"
-	usecases "github.com/Lukasveiga/customers-users-transaction/internal/usecases/cards"
+	infra "github.com/Lukasveiga/customers-users-transaction/users-transactions-api/internal/infra/repository/sqlc"
+	"github.com/Lukasveiga/customers-users-transaction/users-transactions-api/internal/shared"
+	usecases "github.com/Lukasveiga/customers-users-transaction/users-transactions-api/internal/usecases/cards"
 )
 
 type FindTransactionUsecase struct {

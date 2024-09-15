@@ -6,12 +6,12 @@ import (
 	"log/slog"
 	"net"
 
-	"github.com/Lukasveiga/customers-users-transaction/cmd/api/factory"
-	"github.com/Lukasveiga/customers-users-transaction/cmd/api/router"
-	"github.com/Lukasveiga/customers-users-transaction/config"
-	"github.com/Lukasveiga/customers-users-transaction/internal/genproto"
-	infra "github.com/Lukasveiga/customers-users-transaction/internal/infra/repository/sqlc"
-	usecases "github.com/Lukasveiga/customers-users-transaction/internal/usecases/grpc"
+	"github.com/Lukasveiga/customers-users-transaction/users-transactions-api/cmd/api/factory"
+	"github.com/Lukasveiga/customers-users-transaction/users-transactions-api/cmd/api/router"
+	"github.com/Lukasveiga/customers-users-transaction/users-transactions-api/config"
+	"github.com/Lukasveiga/customers-users-transaction/users-transactions-api/internal/genproto"
+	infra "github.com/Lukasveiga/customers-users-transaction/users-transactions-api/internal/infra/repository/sqlc"
+	usecases "github.com/Lukasveiga/customers-users-transaction/users-transactions-api/internal/usecases/grpc"
 	"google.golang.org/grpc"
 )
 

@@ -4,13 +4,13 @@ import (
 	"database/sql"
 	"fmt"
 
-	"github.com/Lukasveiga/customers-users-transaction/config"
-	"github.com/Lukasveiga/customers-users-transaction/internal/handlers"
-	infra "github.com/Lukasveiga/customers-users-transaction/internal/infra/repository/sqlc"
-	accountUsecases "github.com/Lukasveiga/customers-users-transaction/internal/usecases/account"
-	cardUsecases "github.com/Lukasveiga/customers-users-transaction/internal/usecases/cards"
-	tenantUsecases "github.com/Lukasveiga/customers-users-transaction/internal/usecases/tenant"
-	transactionUsecases "github.com/Lukasveiga/customers-users-transaction/internal/usecases/transactions"
+	"github.com/Lukasveiga/customers-users-transaction/users-transactions-api/config"
+	"github.com/Lukasveiga/customers-users-transaction/users-transactions-api/internal/handlers"
+	infra "github.com/Lukasveiga/customers-users-transaction/users-transactions-api/internal/infra/repository/sqlc"
+	accountUsecases "github.com/Lukasveiga/customers-users-transaction/users-transactions-api/internal/usecases/account"
+	cardUsecases "github.com/Lukasveiga/customers-users-transaction/users-transactions-api/internal/usecases/cards"
+	tenantUsecases "github.com/Lukasveiga/customers-users-transaction/users-transactions-api/internal/usecases/tenant"
+	transactionUsecases "github.com/Lukasveiga/customers-users-transaction/users-transactions-api/internal/usecases/transactions"
 )
 
 type Handlers struct {

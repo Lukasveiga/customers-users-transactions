@@ -9,10 +9,10 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	infra "github.com/Lukasveiga/customers-users-transaction/internal/infra/repository/sqlc"
-	"github.com/Lukasveiga/customers-users-transaction/internal/mocks"
-	accountUsecases "github.com/Lukasveiga/customers-users-transaction/internal/usecases/account"
-	cardUsecases "github.com/Lukasveiga/customers-users-transaction/internal/usecases/cards"
+	infra "github.com/Lukasveiga/customers-users-transaction/users-transactions-api/internal/infra/repository/sqlc"
+	"github.com/Lukasveiga/customers-users-transaction/users-transactions-api/internal/mocks"
+	accountUsecases "github.com/Lukasveiga/customers-users-transaction/users-transactions-api/internal/usecases/account"
+	cardUsecases "github.com/Lukasveiga/customers-users-transaction/users-transactions-api/internal/usecases/cards"
 	"github.com/gin-gonic/gin"
 	"github.com/stretchr/testify/assert"
 )
