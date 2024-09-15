@@ -4,8 +4,8 @@ import (
 	"context"
 	"log/slog"
 
-	infra "github.com/Lukasveiga/customers-users-transaction/internal/infra/repository/sqlc"
-	usecases "github.com/Lukasveiga/customers-users-transaction/internal/usecases/account"
+	infra "github.com/Lukasveiga/customers-users-transaction/users-transactions-api/internal/infra/repository/sqlc"
+	usecases "github.com/Lukasveiga/customers-users-transaction/users-transactions-api/internal/usecases/account"
 )
 
 type FindAllCards struct {

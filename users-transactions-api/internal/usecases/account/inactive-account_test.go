@@ -5,9 +5,9 @@ import (
 	"errors"
 	"testing"
 
-	infra "github.com/Lukasveiga/customers-users-transaction/internal/infra/repository/sqlc"
-	"github.com/Lukasveiga/customers-users-transaction/internal/mocks"
-	"github.com/Lukasveiga/customers-users-transaction/internal/shared"
+	infra "github.com/Lukasveiga/customers-users-transaction/users-transactions-api/internal/infra/repository/sqlc"
+	"github.com/Lukasveiga/customers-users-transaction/users-transactions-api/internal/mocks"
+	"github.com/Lukasveiga/customers-users-transaction/users-transactions-api/internal/shared"
 	"github.com/stretchr/testify/assert"
 )
 

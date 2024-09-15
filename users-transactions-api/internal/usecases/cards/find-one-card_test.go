@@ -6,9 +6,9 @@ import (
 	"fmt"
 	"testing"
 
-	infra "github.com/Lukasveiga/customers-users-transaction/internal/infra/repository/sqlc"
-	"github.com/Lukasveiga/customers-users-transaction/internal/mocks"
-	usecases "github.com/Lukasveiga/customers-users-transaction/internal/usecases/account"
+	infra "github.com/Lukasveiga/customers-users-transaction/users-transactions-api/internal/infra/repository/sqlc"
+	"github.com/Lukasveiga/customers-users-transaction/users-transactions-api/internal/mocks"
+	usecases "github.com/Lukasveiga/customers-users-transaction/users-transactions-api/internal/usecases/account"
 	"github.com/stretchr/testify/assert"
 )
 

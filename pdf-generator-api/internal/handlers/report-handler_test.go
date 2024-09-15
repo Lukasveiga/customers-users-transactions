@@ -6,8 +6,8 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	"github.com/Lukasveiga/customers-users-transactions/internal/mocks"
-	"github.com/Lukasveiga/customers-users-transactions/internal/usecases"
+	"github.com/Lukasveiga/customers-users-transactions/pdf-generator-api/internal/mocks"
+	"github.com/Lukasveiga/customers-users-transactions/pdf-generator-api/internal/usecases"
 	"github.com/gin-gonic/gin"
 	"github.com/stretchr/testify/assert"
 )

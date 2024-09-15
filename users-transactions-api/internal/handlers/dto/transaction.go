@@ -1,6 +1,6 @@
 package dto
 
-import infra "github.com/Lukasveiga/customers-users-transaction/internal/infra/repository/sqlc"
+import infra "github.com/Lukasveiga/customers-users-transaction/users-transactions-api/internal/infra/repository/sqlc"
 
 type TransactioRequest struct {
 	CardId int32  `json:"card_id"`

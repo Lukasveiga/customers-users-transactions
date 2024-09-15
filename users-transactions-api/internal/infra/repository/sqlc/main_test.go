@@ -5,7 +5,7 @@ import (
 	"os"
 	"testing"
 
-	"github.com/Lukasveiga/customers-users-transaction/config"
+	"github.com/Lukasveiga/customers-users-transaction/users-transactions-api/config"
 )
 
 var (

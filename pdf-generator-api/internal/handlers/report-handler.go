@@ -5,9 +5,9 @@ import (
 	"os"
 	"strconv"
 
-	"github.com/Lukasveiga/customers-users-transactions/internal/handlers/tools"
-	"github.com/Lukasveiga/customers-users-transactions/internal/shared"
-	"github.com/Lukasveiga/customers-users-transactions/internal/usecases"
+	"github.com/Lukasveiga/customers-users-transactions/pdf-generator-api/internal/handlers/tools"
+	"github.com/Lukasveiga/customers-users-transactions/pdf-generator-api/internal/shared"
+	"github.com/Lukasveiga/customers-users-transactions/pdf-generator-api/internal/usecases"
 	"github.com/gin-gonic/gin"
 )
 

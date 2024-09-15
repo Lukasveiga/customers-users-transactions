@@ -7,7 +7,7 @@ import (
 	"fmt"
 	"sync"
 
-	"github.com/Lukasveiga/customers-users-transactions/internal/genproto"
+	"github.com/Lukasveiga/customers-users-transactions/pdf-generator-api/internal/genproto"
 	"github.com/jinzhu/copier"
 )
 

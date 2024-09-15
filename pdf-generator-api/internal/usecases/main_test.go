@@ -5,7 +5,7 @@ import (
 	"os"
 	"testing"
 
-	"github.com/Lukasveiga/customers-users-transactions/internal/genproto"
+	"github.com/Lukasveiga/customers-users-transactions/pdf-generator-api/internal/genproto"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
 )
