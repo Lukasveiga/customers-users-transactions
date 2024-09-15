@@ -68,7 +68,7 @@ O desafio consiste na construção de dois serviços que permitam:
 </ul>
 
 ## Diagrama de casos de uso:
-<img src="./assets/diagram.png">
+<img src="./assets/diagram-updated.png">
 
 
 
