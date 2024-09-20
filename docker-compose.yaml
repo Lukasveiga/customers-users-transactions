@@ -12,14 +12,18 @@ services:
       - 9090:9090
     volumes:
       - ./nginx.conf:/etc/nginx/nginx.conf
+    deploy:
+      resources:
+          limits:
+            cpus: '0.25'
+            memory: 50M
     networks:
       - nginx_net
     depends_on:
-      - api1_instance_1
-      - api1_instance_2
+      - api1
       - api2
 
-  api1_instance_1:
+  api1:
     build:
       context: ./users-transactions-api
       dockerfile: Dockerfile
@@ -29,22 +33,16 @@ services:
     depends_on:
       database:
         condition: service_healthy
+    deploy:
+      mode: replicated
+      replicas: 2
+      resources:
+          limits:
+            cpus: '0.25'
+            memory: 50M
     networks:
       - nginx_net
 
-  api1_instance_2:
-    build:
-      context: ./users-transactions-api
-      dockerfile: Dockerfile
-    environment:
-      PORT: ${API1_PORT}
-      GRPC_PORT: ${GRPC_PORT}
-    depends_on:
-      database:
-        condition: service_healthy
-    networks:
-      - nginx_net
-  
   api2:
     build:
       context: ./pdf-generator-api
@@ -52,11 +50,15 @@ services:
     environment:
       PORT: ${API2_PORT}
       GRPC_PORT: ${GRPC_PORT}
+    deploy:
+      resources:
+        limits:
+          cpus: '0.25'
+          memory: 50M
     networks:
       - nginx_net
     depends_on:
-      - api1_instance_1
-      - api1_instance_2
+      - api1
 
   database:
     image: postgres:16-alpine
@@ -73,5 +75,10 @@ services:
       interval: 3s
       timeout: 5s
       retries: 5
+    deploy:
+      resources:
+        limits:
+          cpus: '0.25'
+          memory: 128M
     networks:
       - nginx_net
